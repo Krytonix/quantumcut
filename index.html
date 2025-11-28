@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuantumCut: Cybernetic Studio</title>
+    <style>
+        /* === CYBERNETIC PIXEL FONT === */
+        @font-face {
+            font-family: 'PixelOperator';
+            src: url('https://fonts.cdnfonts.com/s/29811/PixelOperator.woff');
+        }
+
+        /* === CYBERNETIC COLOR PALETTE === */
+        :root {
+            --cyber-black: #0a0a12;
+            --cyber-black-deep: #050508;
+            --cyber-blue: #00e5ff;
+            --cyber-blue-dark: #0088cc;
+            --cyber-blue-glow: rgba(0, 229, 255, 0.6);
+            --cyber-cyan: #4affff;
+            --cyber-purple: #a0f;
+            --cyber-gray: #1a1a24;
+            --cyber-gray-light: #2a2a36;
+            --cyber-red: #ff0044;
+            --cyber-green: #00ff88;
+            --cyber-yellow: #ffdd00;
+            --pixel-size: 1px;
+            --glow-intensity: 0.5;
+        }
+
+        * {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'PixelOperator', 'Courier New', monospace;
+            background: radial-gradient(ellipse at center, var(--cyber-black-deep) 0%, var(--cyber-black) 100%);
+            color: var(--cyber-blue);
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+            cursor: crosshair;
+        }
+
+        /* === ANIMATED CIRCUIT BACKGROUND === */
+        .circuit-bg {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: -2;
+            opacity: 0.1;
+            background-image: 
+                repeating-linear-gradient(
+                    0deg,
+                    var(--cyber-blue) 0px,
+                    transparent 1px,
+                    transparent 20px,
+                    var(--cyber-blue) 21px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    var(--cyber-blue) 0px,
+                    transparent 1px,
+                    transparent 20px,
+                    var(--cyber-blue) 21px
+                );
+            animation: circuit-scroll 20s linear infinite;
+        }
+
+        @keyframes circuit-scroll {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(20px, 20px); }
+        }
+
+        /* === PIXELATED GLOW ELEMENTS === */
+        .pixel-glow {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: -1;
+            box-shadow: 
+                inset 0 0 50px var(--cyber-blue-glow),
+                0 0 100px rgba(160, 0, 255, 0.2);
+        }
+
+        /* === AUTH SCREEN === */
+        .auth-screen {
+            position: fixed;
+            inset: 0;
+            background: var(--cyber-black-deep);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s;
+        }
+
+        .auth-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .auth-terminal {
+            background: var(--cyber-gray);
+            border: var(--pixel-size) solid var(--cyber-blue);
+            border-radius: 0;
+            padding: 40px;
+            width: 480px;
+            box-shadow: 
+                0 0 40px var(--cyber-blue-glow),
+                inset 0 0 20px rgba(0, 229, 255, 0.1);
+            position: relative;
+        }
+
+        .auth-terminal::before {
+            content: 'SYSTEM LOGIN v9.9.9';
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background: var(--cyber-gray);
+            padding: 0 10px;
+            color: var(--cyber-green);
+            font-size: 10px;
+            letter-spacing: 2px;
+        }
+
+        .auth-terminal h1 {
+            font-size: 24px;
+            margin-bottom: 30px;
+            text-align: center;
+            color: var(--cyber-cyan);
+            text-shadow: 0 0 10px var(--cyber-cyan);
+            letter-spacing: 3px;
+        }
+
+        .auth-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+            margin-bottom: 30px;
+        }
+
+        .auth-tab {
+            padding: 12px;
+            background: var(--cyber-gray-light);
+            border: var(--pixel-size) solid var(--cyber-blue);
+            color: var(--cyber-blue);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.2s;
+        }
+
+        .auth-tab:hover {
+            background: var(--cyber-blue);
+            color: var(--cyber-black);
+            box-shadow: 0 0 10px var(--cyber-blue-glow);
+        }
+
+        .auth-tab.active {
+            background: var(--cyber-blue);
+            color: var(--cyber-black);
+            box-shadow: 0 0 15px var(--cyber-blue-glow);
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 10px;
+            color: var(--cyber-cyan);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            background: var(--cyber-black);
+            border: var(--pixel-size) solid var(--cyber-gray-light);
+            border-radius: 0;
+            color: var(--cyber-cyan);
+            font-family: inherit;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--cyber-blue);
+            background: var(--cyber-black-deep);
+            box-shadow: 0 0 10px var(--cyber-blue-glow);
+        }
+
+        .form-input::placeholder {
+            color: var(--cyber-gray-light);
+        }
+
+        .btn-cyber {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(180deg, var(--cyber-blue) 0%, var(--cyber-blue-dark) 100%);
+            border: var(--pixel-size) solid var(--cyber-blue);
+            border-radius: 0;
+            color: var(--cyber-black);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-cyber:hover {
+            background: linear-gradient(180deg, var(--cyber-cyan) 0%, var(--cyber-blue) 100%);
+            box-shadow: 0 0 20px var(--cyber-blue-glow);
+            transform: translateY(-2px);
+        }
+
+        .btn-cyber:active {
+            transform: translateY(0);
+        }
+
+        .btn-cyber::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                var(--cyber-cyan),
+                transparent
+            );
+            transform: rotate(30deg);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .btn-cyber:hover::after {
+            opacity: 0.3;
+            animation: scan 0.6s linear;
+        }
+
+        @keyframes scan {
+            0% { transform: rotate(30deg) translateX(-100%); }
+            100% { transform: rotate(30deg) translateX(100%); }
+        }
+
+        .error-text {
+            color: var(--cyber-red);
+            font-size: 10px;
+            margin-top: 8px;
+            text-shadow: 0 0 5px var(--cyber-red);
+        }
+
+        .success-text {
+            color: var(--cyber-green);
+            font-size: 10px;
+            margin-top: 8px;
+            text-shadow: 0 0 5px var(--cyber-green);
+        }
+
+        /* === USER PROFILE === */
+        .user-profile {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            background: var(--cyber-gray);
+            border: var(--pixel-size) solid var(--cyber-blue);
+            padding: 8px 16px;
+            box-shadow: 0 0 20px var(--cyber-blue-glow);
+            z-index: 100;
+        }
+
+        .user-profile.visible {
+            display: flex;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: var(--cyber-blue);
+            border: 2px solid var(--cyber-cyan);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: var(--cyber-black);
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .username {
+            font-size: 12px;
+            color: var(--cyber-cyan);
+            font-weight: bold;
+        }
+
+        .user-role {
+            font-size: 10px;
+            color: var(--cyber-purple);
+        }
+
+        /* === MAIN APP === */
+        .app-container {
+            display: grid;
+            grid-template-columns: 60px 240px 1fr 300px;
+            grid-template-rows: 48px 32px 1fr 200px;
+            height: 100vh;
+            gap: 2px;
+            background: var(--cyber-gray-light);
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .app-container.ready {
+            opacity: 1;
+        }
+
+        /* === TOP BAR === */
+        .top-bar {
+            grid-column: 1 / -1;
+            background: var(--cyber-gray);
+            border-bottom: 2px solid var(--cyber-blue);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 2px 10px var(--cyber-blue-glow);
+            position: relative;
+        }
+
+        .top-bar::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--cyber-cyan);
+            box-shadow: 0 0 5px var(--cyber-cyan);
+        }
+
+        .logo {
+            font-size: 18px;
+            color: var(--cyber-cyan);
+            text-shadow: 0 0 10px var(--cyber-cyan);
+            letter-spacing: 2px;
+        }
+
+        .workspace-tabs {
+            margin-left: 40px;
+            display: flex;
+            gap: 4px;
+        }
+
+        .tab {
+            padding: 8px 16px;
+            background: var(--cyber-gray-light);
+            border: var(--pixel-size) solid var(--cyber-gray-light);
+            color: var(--cyber-blue);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            border-color: var(--cyber-blue);
+            color: var(--cyber-cyan);
+        }
+
+        .tab.active {
+            background: var(--cyber-blue);
+            border-color: var(--cyber-blue);
+            color: var(--cyber-black);
+            box-shadow: 0 0 10px var(--cyber-blue-glow);
+        }
+
+        /* === TOOLBAR === */
+        .toolbar {
+            grid-column: 1;
+            grid-row: 3 / 5;
+            background: var(--cyber-gray);
+            border-right: 2px solid var(--cyber-blue);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 16px 8px;
+            box-shadow: 2px 0 10px rgba(0, 229, 255, 0.2);
+        }
+
+        .tool-btn {
+            width: 44px;
+            height: 44px;
+            background: var(--cyber-gray-light);
+            border: 2px solid var(--cyber-gray-light);
+            border-radius: 0;
+            color: var(--cyber-blue);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .tool-btn:hover {
+            border-color: var(--cyber-blue);
+            color: var(--cyber-cyan);
+            box-shadow: 0 0 10px var(--cyber-blue-glow);
+        }
+
+        .tool-btn.active {
+            background: var(--cyber-blue);
+            border-color: var(--cyber-blue);
+            color: var(--cyber-black);
+            box-shadow: 0 0 15px var(--cyber-blue-glow);
+        }
+
+        .tool-btn .shortcut {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            font-size: 8px;
+            color: var(--cyber-purple);
+        }
+
+        /* === PANELS === */
+        .panel-tabs {
+            grid-column: 2;
+            grid-row: 2;
+            background: var(--cyber-gray);
+            border-right: 2px solid var(--cyber-blue);
+            border-bottom: 2px solid var(--cyber-blue);
+            display: flex;
+        }
+
+        .panel-tab {
+            flex: 1;
+            background: var(--cyber-gray-light);
+            border: none;
+            border-right: 1px solid var(--cyber-gray-light);
+            color: var(--cyber-blue);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 10px;
+            text-transform: uppercase;
+            transition: all 0.2s;
+        }
+
+        .panel-tab:last-child {
+            border-right: none;
+        }
+
+        .panel-tab:hover {
+            background: var(--cyber-blue);
+            color: var(--cyber-black);
+        }
+
+        .panel-tab.active {
+            background: var(--cyber-blue);
+            color: var(--cyber-black);
+            box-shadow: inset 0 0 10px var(--cyber-blue-glow);
+        }
+
+        .media-panel {
+            grid-column: 2;
+            grid-row: 3 / 5;
+            background: var(--cyber-gray);
+            border-right: 2px solid var(--cyber-blue);
+            overflow: hidden;
+        }
+
+        .panel-content {
+            height: 100%;
+            overflow-y: auto;
+            padding: 16px;
+            display: none;
+        }
+
+        .panel-content.active {
+            display: block;
+        }
+
+        .panel-section {
+            margin-bottom: 24px;
+        }
+
+        .panel-section h3 {
+            color: var(--cyber-cyan);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            text-shadow: 0 0 5px var(--cyber-cyan);
+        }
+
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 8px;
+        }
+
+        .media-item {
+            aspect-ratio: 16/9;
+            background: var(--cyber-gray-light);
+            border: 2px solid var(--cyber-gray-light);
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .media-item:hover {
+            border-color: var(--cyber-blue);
+            box-shadow: 0 0 10px var(--cyber-blue-glow);
+            transform: scale(1.05);
+        }
+
+        .effect-item, .template-item {
+            background: var(--cyber-gray-light);
+            border: 2px solid var(--cyber-gray-light);
+            padding: 8px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+            color: var(--cyber-blue);
+        }
+
+        .effect-item:hover {
+            border-color: var(--cyber-blue);
+            background: rgba(0, 229, 255, 0.1);
+            color: var(--cyber-cyan);
+        }
+
+        /* === VIEWER === */
+        .viewer-container {
+            grid-column: 3;
+            grid-row: 3;
+            background: var(--cyber-black-deep);
+            border: 2px solid var(--cyber-blue);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #viewerCanvas {
+            width: 100%;
+            height: 100%;
+            background: var(--cyber-black);
+        }
+
+        .playback-controls {
+            position: absolute;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--cyber-gray);
+            border: 2px solid var(--cyber-blue);
+            padding: 8px;
+            display: flex;
+            gap: 4px;
+            box-shadow: 0 0 20px var(--cyber-blue-glow);
+        }
+
+        .playback-btn {
+            width: 40px;
+            height: 40px;
+            background: var(--cyber-gray-light);
+            border: 2px solid var(--cyber-gray-light);
+            color: var(--cyber-blue);
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .playback-btn:hover {
+            border-color: var(--cyber-blue);
+            color: var(--cyber-cyan);
+        }
+
+        .playback-btn.primary {
+            background: var(--cyber-blue);
+            color: var(--cyber-black);
+            border-color: var(--cyber-blue);
+        }
+
+        /* === INSPECTOR === */
+        .inspector {
+            grid-column: 4;
+            grid-row: 3;
+            background: var(--cyber-gray);
+            border-left: 2px solid var(--cyber-blue);
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .inspector-section {
+            margin-bottom: 24px;
+            border: 1px solid var(--cyber-gray-light);
+            padding: 12px;
+        }
+
+        .inspector-section h3 {
+            color: var(--cyber-cyan);
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            text-shadow: 0 0 5px var(--cyber-cyan);
+        }
+
+        .property-group {
+            margin-bottom: 16px;
+        }
+
+        .property-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: var(--cyber-blue);
+            margin-bottom: 4px;
+        }
+
+        .property-value {
+            color: var(--cyber-cyan);
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .slider {
+            flex: 1;
+            height: 4px;
+            background: var(--cyber-gray-light);
+            border-radius: 0;
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: var(--cyber-blue);
+            border: 1px solid var(--cyber-cyan);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            background: var(--cyber-cyan);
+            box-shadow: 0 0 5px var(--cyber-blue-glow);
+        }
+
+        /* === TIMELINE === */
+        .timeline-container {
+            grid-column: 3 / 5;
+            grid-row: 4;
+            background: var(--cyber-gray);
+            border-top: 2px solid var(--cyber-blue);
+        }
+
+        .timeline-toolbar {
+            display: flex;
+            gap: 4px;
+            padding: 8px;
+            background: var(--cyber-gray-light);
+            border-bottom: 1px solid var(--cyber-blue);
+        }
+
+        .track {
+            height: 40px;
+            border-bottom: 1px solid var(--cyber-gray-light);
+            display: flex;
+            position: relative;
+        }
+
+        .track-header {
+            width: 80px;
+            background: var(--cyber-gray-light);
+            border-right: 2px solid var(--cyber-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: var(--cyber-blue);
+        }
+
+        .clip {
+            position: absolute;
+            top: 4px;
+            height: 32px;
+            background: linear-gradient(180deg, var(--cyber-blue) 0%, var(--cyber-blue-dark) 100%);
+            border: 2px solid var(--cyber-blue);
+            cursor: move;
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            font-size: 10px;
+            user-select: none;
+            transition: all 0.2s;
+            color: var(--cyber-black);
+            font-weight: bold;
+        }
+
+        .clip:hover {
+            box-shadow: 0 0 10px var(--cyber-blue-glow);
+        }
+
+        .clip.selected {
+            border-color: var(--cyber-purple);
+            box-shadow: 0 0 15px rgba(160, 0, 255, 0.6);
+        }
+
+        .playhead {
+            position: absolute;
+            left: 80px;
+            width: 2px;
+            height: 100%;
+            background: var(--cyber-red);
+            box-shadow: 0 0 10px var(--cyber-red);
+        }
+
+        /* === AI ASSISTANT === */
+        .ai-assistant {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            width: 300px;
+            background: var(--cyber-gray);
+            border: 2px solid var(--cyber-blue);
+            padding: 12px;
+            transform: translateY(200px);
+            transition: transform 0.3s;
+            box-shadow: 0 0 30px var(--cyber-blue-glow);
+        }
+
+        .ai-assistant.visible {
+            transform: translateY(0);
+        }
+
+        .ai-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--cyber-blue);
+        }
+
+        .ai-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--cyber-blue);
+            border: 1px solid var(--cyber-cyan);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: var(--cyber-black);
+        }
+
+        .ai-suggestion {
+            background: var(--cyber-gray-light);
+            border: 1px solid var(--cyber-gray-light);
+            padding: 8px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            font-size: 10px;
+            transition: all 0.2s;
+            color: var(--cyber-blue);
+        }
+
+        .ai-suggestion:hover {
+            border-color: var(--cyber-blue);
+            background: rgba(0, 229, 255, 0.1);
+            color: var(--cyber-cyan);
+            box-shadow: 0 0 5px var(--cyber-blue-glow);
+        }
+
+        /* === LOADING === */
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 10, 18, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-overlay.visible {
+            display: flex;
+        }
+
+        .cyber-loader {
+            width: 80px;
+            height: 80px;
+            position: relative;
+        }
+
+        .cyber-loader::before,
+        .cyber-loader::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border: 4px solid transparent;
+            animation: rotate 2s linear infinite;
+        }
+
+        .cyber-loader::before {
+            border-top-color: var(--cyber-blue);
+            border-bottom-color: var(--cyber-blue);
+        }
+
+        .cyber-loader::after {
+            border-left-color: var(--cyber-purple);
+            border-right-color: var(--cyber-purple);
+            animation-direction: reverse;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* === NOTIFICATION === */
+        .notification {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            background: var(--cyber-gray);
+            border: 2px solid var(--cyber-blue);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transform: translateX(400px);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1001;
+            box-shadow: 0 0 30px var(--cyber-blue-glow);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            border-color: var(--cyber-red);
+            box-shadow: 0 0 30px rgba(255, 0, 68, 0.5);
+        }
+
+        .notification.success {
+            border-color: var(--cyber-green);
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+        }
+
+        /* === SCROLLBARS === */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--cyber-gray);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--cyber-gray-light);
+            border: 1px solid var(--cyber-blue);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--cyber-blue);
+        }
+    </style>
+</head>
+<body>
+    <!-- Circuit Background -->
+    <div class="circuit-bg"></div>
+    <div class="pixel-glow"></div>
+
+    <!-- AUTHENTICATION TERMINAL -->
+    <div class="auth-screen" id="authScreen">
+        <div class="auth-terminal">
+            <h1>[ QUANTUMCUT OS ]</h1>
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="switchAuthTab('login')">LOGIN</button>
+                <button class="auth-tab" onclick="switchAuthTab('signup')">REGISTER</button>
+            </div>
+            
+            <form id="authForm">
+                <div class="form-group">
+                    <label class="form-label">USERNAME</label>
+                    <input type="text" class="form-input" id="username" placeholder="cyber_editor_42" required>
+                </div>
+                <div class="form-group" id="emailGroup" style="display: none;">
+                    <label class="form-label">EMAIL (OPTIONAL)</label>
+                    <input type="email" class="form-input" id="email" placeholder="dev@quantumcut.net">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">PASSWORD</label>
+                    <input type="password" class="form-input" id="password" placeholder="••••••••" required>
+                </div>
+                <div class="form-group" id="confirmPasswordGroup" style="display: none;">
+                    <label class="form-label">CONFIRM PASSWORD</label>
+                    <input type="password" class="form-input" id="confirmPassword" placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-cyber" id="authButton">[ EXECUTE LOGIN ]</button>
+                <div class="error-text" id="errorText"></div>
+                <div class="success-text" id="successText"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- USER PROFILE -->
+    <div class="user-profile" id="userProfile">
+        <div class="user-avatar">🖥️</div>
+        <div class="user-info">
+            <div class="username" id="currentUsername"></div>
+            <div class="user-role">Cyber Editor</div>
+        </div>
+        <button class="btn-cyber" onclick="logout()" style="padding: 4px 12px; font-size: 10px;">[ LOGOUT ]</button>
+    </div>
+
+    <!-- MAIN APPLICATION -->
+    <div class="app-container" id="appContainer" style="display: none;">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div class="logo">⚛️ QUANTUMCUT CYBERNETIC</div>
+            <div class="workspace-tabs">
+                <button class="tab active" onclick="switchWorkspace('edit')">EDIT</button>
+                <button class="tab" onclick="switchWorkspace('color')">COLOR</button>
+                <button class="tab" onclick="switchWorkspace('effects')">EFFECTS</button>
+                <button class="tab" onclick="switchWorkspace('audio')">AUDIO</button>
+                <button class="tab" onclick="exportProject()">EXPORT</button>
+            </div>
+        </header>
+
+        <!-- Toolbar -->
+        <nav class="toolbar">
+            <button class="tool-btn active" data-tool="select" title="Select Tool (V)">⬚<span class="shortcut">V</span></button>
+            <button class="tool-btn" data-tool="cut" title="Cut Tool (C)">✂️<span class="shortcut">C</span></button>
+            <button class="tool-btn" data-tool="trim" title="Trim Tool">↔️</button>
+            <button class="tool-btn" data-tool="text" title="Text Tool">T</button>
+            <button class="tool-btn" data-tool="zoom" title="Zoom Tool">🔍</button>
+            <div style="flex: 1;"></div>
+            <button class="tool-btn" onclick="toggleAI()" title="AI Assistant">🤖</button>
+        </nav>
+
+        <!-- Panel Tabs -->
+        <div class="panel-tabs">
+            <button class="panel-tab active" onclick="switchPanel('media')">MEDIA</button>
+            <button class="panel-tab" onclick="switchPanel('effects')">EFFECTS</button>
+            <button class="panel-tab" onclick="switchPanel('templates')">TEMPLATES</button>
+        </div>
+
+        <!-- Media Panel -->
+        <aside class="media-panel">
+            <div class="panel-content active" id="mediaPanel">
+                <div class="panel-section">
+                    <h3>📁 MEDIA INVENTORY</h3>
+                    <button class="btn-cyber" onclick="loadMedia()" style="width: 100%; margin-bottom: 16px;">[ IMPORT MEDIA ]</button>
+                    <div class="media-grid" id="mediaGrid"></div>
+                </div>
+            </div>
+
+            <div class="panel-content" id="effectsPanel">
+                <div class="panel-section">
+                    <h3>🎨 VIDEO EFFECTS</h3>
+                    <div class="effect-item" data-effect="quantum-color">QUANTUM COLOR</div>
+                    <div class="effect-item" data-effect="pixel-blur">PIXEL BLUR</div>
+                    <div class="effect-item" data-effect="chroma-scan">CHROMA SCAN</div>
+                </div>
+            </div>
+
+            <div class="panel-content" id="templatesPanel">
+                <div class="panel-section">
+                    <h3>📑 CYBER TEMPLATES</h3>
+                    <div class="template-item">TERMINAL LOWER THIRD</div>
+                    <div class="template-item">GLITCH TITLE</div>
+                    <div class="template-item">MATRIX OVERLAY</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Viewer -->
+        <main class="viewer-container">
+            <canvas id="viewerCanvas"></canvas>
+            <div class="playback-controls">
+                <button class="playback-btn" onclick="stepBackward()">⏪</button>
+                <button class="playback-btn primary" onclick="togglePlayback()" id="playPauseBtn">▶️</button>
+                <button class="playback-btn" onclick="stepForward()">⏩</button>
+                <div class="timecode" id="timecode">00:00 / 00:00</div>
+            </div>
+        </main>
+
+        <!-- Inspector -->
+        <aside class="inspector">
+            <div class="inspector-section">
+                <h3>🎬 CLIP PROPERTIES</h3>
+                <div class="property-group">
+                    <div class="property-label">DURATION <span class="property-value" id="clipDuration">00:00</span></div>
+                </div>
+                <div class="property-group">
+                    <div class="property-label">RESOLUTION <span class="property-value" id="clipResolution">-</span></div>
+                </div>
+                <div class="property-group">
+                    <div class="property-label">FPS <span class="property-value" id="clipFPS">-</span></div>
+                </div>
+            </div>
+
+            <div class="inspector-section">
+                <h3>⚡ QUANTUM CONTROLS</h3>
+                <div class="property-group">
+                    <div class="property-label">BRIGHTNESS</div>
+                    <div class="slider-container">
+                        <input type="range" class="slider" min="0" max="200" value="100">
+                        <button class="btn-cyber" style="padding: 2px 6px; font-size: 8px;">◆</button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Timeline -->
+        <section class="timeline-container">
+            <div class="timeline-toolbar">
+                <button class="btn-cyber" onclick="addTrack()">[ ADD TRACK ]</button>
+                <button class="btn-cyber" onclick="splitClip()">[ SPLIT ]</button>
+                <button class="btn-cyber" onclick="deleteClip()">[ DELETE ]</button>
+            </div>
+            <div class="timeline-ruler"></div>
+            <div class="timeline-tracks" id="timelineTracks">
+                <div class="track" data-track-id="V1">
+                    <div class="track-header">V1</div>
+                    <div class="track-content">
+                        <div class="clip" data-clip-id="clip1" style="left: 100px; width: 300px;">
+                            QUANTUM_CLIP_001
+                            <div class="handle left"></div>
+                            <div class="handle right"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="playhead" id="playhead"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- AI Assistant -->
+    <div class="ai-assistant" id="aiAssistant">
+        <div class="ai-header">
+            <div class="ai-icon">🤖</div>
+            <div style="font-weight: bold; color: var(--cyber-cyan);">QUANTUM AI</div>
+            <button class="btn-cyber" onclick="toggleAI()" style="padding: 4px 8px; font-size: 10px;">[ X ]</button>
+        </div>
+        <div class="ai-suggestion" onclick="applyAISuggestion('autoedit')">⚡ AUTO-EDIT SEQUENCE</div>
+        <div class="ai-suggestion" onclick="applyAISuggestion('colorgrade')">🎨 AI COLOR GRADE</div>
+        <div class="ai-suggestion" onclick="applyAISuggestion('cyberpunk')">🌃 CYBERPUNK FILTER</div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="cyber-loader"></div>
+        <p style="color: var(--cyber-cyan); text-shadow: 0 0 10px var(--cyber-cyan);">QUANTUM RENDERING...</p>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <span id="notificationIcon">ℹ️</span>
+        <span id="notificationText"></span>
+    </div>
+
+    <script>
+        // === AUTHENTICATION SYSTEM ===
+        class AuthManager {
+            constructor() {
+                this.users = this.loadUsers();
+                this.currentUser = this.loadSession();
+            }
+
+            loadUsers() {
+                const users = localStorage.getItem('quantum_users');
+                return users ? JSON.parse(users) : [];
+            }
+
+            loadSession() {
+                const session = localStorage.getItem('quantum_session');
+                return session ? JSON.parse(session) : null;
+            }
+
+            saveUsers() {
+                localStorage.setItem('quantum_users', JSON.stringify(this.users));
+            }
+
+            saveSession(user) {
+                localStorage.setItem('quantum_session', JSON.stringify(user));
+            }
+
+            clearSession() {
+                localStorage.removeItem('quantum_session');
+            }
+
+            hashPassword(password) {
+                let hash = 0;
+                for (let i = 0; i < password.length; i++) {
+                    const char = password.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & hash;
+                }
+                return hash.toString();
+            }
+
+            signup(username, email, password) {
+                if (this.users.find(u => u.username === username)) {
+                    return { success: false, message: 'Username exists in matrix!' };
+                }
+
+                const user = {
+                    id: Date.now().toString(),
+                    username,
+                    email,
+                    passwordHash: this.hashPassword(password),
+                    created: new Date().toISOString(),
+                    role: 'cyber_editor'
+                };
+
+                this.users.push(user);
+                this.saveUsers();
+                this.saveSession(user);
+                return { success: true, user };
+            }
+
+            login(username, password) {
+                const user = this.users.find(u => u.username === username);
+                if (!user) {
+                    return { success: false, message: 'User not found in system!' };
+                }
+
+                if (user.passwordHash !== this.hashPassword(password)) {
+                    return { success: false, message: 'Access denied: Invalid credentials!' };
+                }
+
+                this.saveSession(user);
+                return { success: true, user };
+            }
+
+            logout() {
+                this.currentUser = null;
+                this.clearSession();
+            }
+
+            isLoggedIn() {
+                return this.currentUser !== null;
+            }
+        }
+
+        const authManager = new AuthManager();
+
+        // === AUTH UI ===
+        let currentAuthMode = 'login';
+
+        function switchAuthTab(mode) {
+            currentAuthMode = mode;
+            document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const emailGroup = document.getElementById('emailGroup');
+            const confirmPasswordGroup = document.getElementById('confirmPasswordGroup');
+            const authButton = document.getElementById('authButton');
+            
+            if (mode === 'signup') {
+                emailGroup.style.display = 'block';
+                confirmPasswordGroup.style.display = 'block';
+                authButton.textContent = '[ EXECUTE REGISTER ]';
+            } else {
+                emailGroup.style.display = 'none';
+                confirmPasswordGroup.style.display = 'none';
+                authButton.textContent = '[ EXECUTE LOGIN ]';
+            }
+            
+            clearMessages();
+        }
+
+        document.getElementById('authForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            clearMessages();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                showError('All fields are required!');
+                return;
+            }
+
+            if (currentAuthMode === 'signup') {
+                const email = document.getElementById('email').value.trim();
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                if (password !== confirmPassword) {
+                    showError('Password mismatch detected!');
+                    return;
+                }
+                
+                const result = authManager.signup(username, email, password);
+                if (result.success) {
+                    showSuccess('Registration complete! Access granted...');
+                    setTimeout(() => initApp(result.user), 1000);
+                } else {
+                    showError(result.message);
+                }
+            } else {
+                const result = authManager.login(username, password);
+                if (result.success) {
+                    showSuccess('Authentication successful! Initiating system...');
+                    setTimeout(() => initApp(result.user), 500);
+                } else {
+                    showError(result.message);
+                }
+            }
+        });
+
+        function clearMessages() {
+            document.getElementById('errorText').textContent = '';
+            document.getElementById('successText').textContent = '';
+        }
+
+        function showError(message) {
+            document.getElementById('errorText').textContent = message;
+        }
+
+        function showSuccess(message) {
+            document.getElementById('successText').textContent = message;
+        }
+
+        function initApp(user) {
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('appContainer').style.display = 'grid';
+            document.getElementById('userProfile').classList.add('visible');
+            document.getElementById('currentUsername').textContent = user.username;
+            
+            quantumEditor = new QuantumCutEditor();
+            window.quantumEditor = quantumEditor;
+            
+            setTimeout(() => {
+                document.getElementById('appContainer').classList.add('ready');
+                showNotification(`System online. Welcome, ${user.username}!`, 'success');
+            }, 300);
+        }
+
+        function logout() {
+            authManager.logout();
+            document.getElementById('appContainer').classList.remove('ready');
+            document.getElementById('userProfile').classList.remove('visible');
+            document.getElementById('appContainer').style.display = 'none';
+            document.getElementById('authScreen').classList.remove('hidden');
+            
+            // Clear form
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('confirmPassword').value = '';
+            clearMessages();
+            
+            showNotification('Session terminated. Goodbye.', 'success');
+        }
+
+        // === EDITOR CLASS ===
+        class QuantumCutEditor {
+            constructor() {
+                this.canvas = document.getElementById('viewerCanvas');
+                this.ctx = this.canvas.getContext('2d', { alpha: false });
+                this.video = document.createElement('video');
+                this.timeline = document.getElementById('timelineTracks');
+                this.playhead = document.getElementById('playhead');
+                this.isPlaying = false;
+                this.selectedClip = null;
+                this.effectsStack = [];
+                this.isDragging = false;
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.setupDragAndDrop();
+                this.loadUserProjects();
+                showNotification('QuantumCut Cybernetic Systems ONLINE');
+            }
+
+            setupEventListeners() {
+                // Global keyboard handler
+                document.addEventListener('keydown', (e) => {
+                    if (e.target.tagName === 'INPUT') return;
+                    
+                    const key = e.key.toLowerCase();
+                    const shortcuts = {
+                        ' ': () => { e.preventDefault(); this.togglePlayback(); },
+                        'v': () => this.setTool('select'),
+                        'c': () => this.setTool('cut'),
+                        'k': () => this.splitClip(),
+                        'delete': () => this.deleteSelected(),
+                        'z': () => { if (e.ctrlKey) this.undo(); },
+                        'y': () => { if (e.ctrlKey) this.redo(); },
+                        's': () => { if (e.ctrlKey) { e.preventDefault(); this.saveProject(); } }
+                    };
+                    
+                    if (shortcuts[key]) {
+                        shortcuts[key]();
+                        this.updateUI();
+                    }
+                });
+
+                // Tool selection
+                document.querySelectorAll('.tool-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const tool = btn.dataset.tool;
+                        this.setTool(tool);
+                        this.updateUI();
+                    });
+                });
+
+                // Effect application
+                document.querySelectorAll('.effect-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const effect = item.dataset.effect;
+                        this.addEffect(effect);
+                        this.updateUI();
+                    });
+                });
+            }
+
+            setupDragAndDrop() {
+                // Clip dragging
+                document.querySelectorAll('.clip').forEach(clip => {
+                    clip.addEventListener('mousedown', (e) => {
+                        if (e.target.classList.contains('handle')) {
+                            this.startTrim(clip, e.target.classList.contains('right'));
+                        } else {
+                            this.startDrag(clip, e);
+                        }
+                    });
+                });
+
+                // Timeline drop
+                this.timeline.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                });
+
+                this.timeline.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    if (this.isDragging) {
+                        const rect = this.timeline.getBoundingClientRect();
+                        const left = Math.max(80, e.clientX - rect.left);
+                        this.draggedClip.style.left = left + 'px';
+                        this.isDragging = false;
+                        this.draggedClip = null;
+                    }
+                });
+            }
+
+            startDrag(clip, e) {
+                this.isDragging = true;
+                this.draggedClip = clip;
+                this.selectClip(clip);
+                clip.draggable = true;
+            }
+
+            selectClip(clip) {
+                document.querySelectorAll('.clip').forEach(c => c.classList.remove('selected'));
+                clip.classList.add('selected');
+                this.selectedClip = clip;
+                this.updateInspector(clip);
+            }
+
+            updateInspector(clip) {
+                const duration = this.calculateClipDuration(clip);
+                const resolution = clip.dataset.resolution || '1920x1080';
+                const fps = clip.dataset.fps || '60';
+                
+                document.getElementById('clipDuration').textContent = duration;
+                document.getElementById('clipResolution').textContent = resolution;
+                document.getElementById('clipFPS').textContent = fps;
+            }
+
+            calculateClipDuration(clip) {
+                const width = parseInt(clip.style.width) || 0;
+                const seconds = Math.floor(width / 50);
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            }
+
+            setTool(tool) {
+                AppState.selectedTool = tool;
+                document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelector(`[data-tool="${tool}"]`).classList.add('active');
+                showNotification(`Tool: ${tool.toUpperCase()}`);
+            }
+
+            loadMedia() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'video/*,audio/*,image/*';
+                input.multiple = true;
+                input.onchange = async (e) => {
+                    const files = Array.from(e.target.files);
+                    for (const file of files) {
+                        await this.processMediaFile(file);
+                    }
+                    showNotification(`Imported ${files.length} media file(s)`, 'success');
+                };
+                input.click();
+            }
+
+            async processMediaFile(file) {
+                const url = URL.createObjectURL(file);
+                const mediaItem = {
+                    id: 'media-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+                    name: file.name,
+                    url: url,
+                    type: file.type,
+                    size: file.size,
+                    uploaded: new Date().toISOString()
+                };
+                
+                AppState.project.media.push(mediaItem);
+                await this.createMediaThumbnail(mediaItem);
+            }
+
+            async createMediaThumbnail(mediaItem) {
+                return new Promise((resolve) => {
+                    const grid = document.getElementById('mediaGrid');
+                    const item = document.createElement('div');
+                    item.className = 'media-item';
+                    item.dataset.mediaId = mediaItem.id;
+                    
+                    if (mediaItem.type.startsWith('video/')) {
+                        const video = document.createElement('video');
+                        video.src = mediaItem.url;
+                        video.onloadedmetadata = () => {
+                            video.currentTime = Math.min(1, video.duration || 1);
+                        };
+                        video.onseeked = () => {
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            canvas.width = 160;
+                            canvas.height = 90;
+                            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                            item.style.backgroundImage = `url(${canvas.toDataURL()})`;
+                            item.style.backgroundSize = 'cover';
+                            item.innerHTML = `<div class="duration">${this.formatDuration(video.duration || 0)}</div>`;
+                            resolve();
+                        };
+                    } else {
+                        item.style.background = 'linear-gradient(45deg, var(--cyber-gray) 0%, var(--cyber-gray-light) 100%)';
+                        item.innerHTML = `<div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 24px;">${mediaItem.type.startsWith('audio/') ? '🎵' : '🖼️'}</div>`;
+                        resolve();
+                    }
+                    
+                    item.onclick = () => this.loadIntoViewer(mediaItem.url);
+                    grid.appendChild(item);
+                });
+            }
+
+            formatDuration(seconds) {
+                if (!seconds) return '00:00';
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            }
+
+            loadIntoViewer(url) {
+                this.video.src = url;
+                this.video.load();
+                this.canvas.style.display = 'block';
+                document.getElementById('viewerStatus').textContent = 'LOADING...';
+                
+                this.video.onloadeddata = () => {
+                    this.canvas.width = this.video.videoWidth;
+                    this.canvas.height = this.video.videoHeight;
+                    document.getElementById('viewerStatus').textContent = this.video.src.split('/').pop().substring(0, 20) + '...';
+                    document.getElementById('viewerResolution').textContent = `${this.video.videoWidth}x${this.video.videoHeight}`;
+                    document.getElementById('viewerFPS').textContent = '60 FPS';
+                    showNotification('Media loaded into quantum viewer', 'success');
+                };
+            }
+
+            togglePlayback() {
+                if (!this.video.src) {
+                    showNotification('No media loaded!', 'error');
+                    return;
+                }
+                
+                const btn = document.getElementById('playPauseBtn');
+                if (this.isPlaying) {
+                    this.video.pause();
+                    this.isPlaying = false;
+                    btn.textContent = '▶️';
+                    document.getElementById('viewerStatus').textContent = 'PAUSED';
+                } else {
+                    this.video.play();
+                    this.isPlaying = true;
+                    btn.textContent = '⏸️';
+                    document.getElementById('viewerStatus').textContent = 'PLAYING';
+                    this.startRenderLoop();
+                }
+            }
+
+            startRenderLoop() {
+                const render = () => {
+                    if (!this.isPlaying) return;
+                    
+                    if (this.video.readyState >= 2) {
+                        this.ctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
+                        this.applyRealTimeEffects();
+                        this.updateTimecode();
+                    }
+                    
+                    requestAnimationFrame(render);
+                };
+                requestAnimationFrame(render);
+            }
+
+            applyRealTimeEffects() {
+                // Apply stacked effects
+                if (this.effectsStack.length > 0) {
+                    let filterString = this.effectsStack.join(' ');
+                    this.ctx.filter = filterString;
+                } else {
+                    this.ctx.filter = 'none';
+                }
+            }
+
+            updateTimecode() {
+                const current = this.formatDuration(this.video.currentTime);
+                const total = this.formatDuration(this.video.duration);
+                document.getElementById('timecode').textContent = `${current} / ${total}`;
+            }
+
+            addEffect(effectId) {
+                const effectMap = {
+                    'quantum-color': 'brightness(1.1) contrast(1.2) saturate(1.3) hue-rotate(15deg)',
+                    'pixel-blur': 'blur(1px)',
+                    'chroma-scan': 'hue-rotate(90deg) saturate(2)'
+                };
+                
+                this.effectsStack.push(effectMap[effectId] || '');
+                showNotification(`Effect applied: ${effectId}`, 'success');
+            }
+
+            splitClip() {
+                if (this.selectedClip) {
+                    const newClip = this.selectedClip.cloneNode(true);
+                    this.selectedClip.parentNode.appendChild(newClip);
+                    showNotification('Clip divided at quantum level', 'success');
+                } else {
+                    showNotification('No clip selected!', 'error');
+                }
+            }
+
+            deleteSelected() {
+                if (this.selectedClip) {
+                    this.selectedClip.remove();
+                    this.selectedClip = null;
+                    showNotification('Clip erased from timeline', 'success');
+                } else {
+                    showNotification('No clip selected!', 'error');
+                }
+            }
+
+            addTrack() {
+                const trackCount = document.querySelectorAll('.track').length;
+                const track = document.createElement('div');
+                track.className = 'track';
+                track.dataset.trackId = `V${trackCount}`;
+                track.innerHTML = `
+                    <div class="track-header">V${trackCount}</div>
+                    <div class="track-content"></div>
+                `;
+                this.timeline.appendChild(track);
+                showNotification(`Track V${trackCount} initialized`, 'success');
+            }
+
+            saveProject() {
+                if (!authManager.currentUser) return;
+                
+                const projectData = {
+                    ...AppState.project,
+                    userId: authManager.currentUser.id,
+                    lastSaved: new Date().toISOString(),
+                    version: '2.0.0-cybernetic'
+                };
+                
+                localStorage.setItem(`quantum_project_${authManager.currentUser.id}`, JSON.stringify(projectData));
+                showNotification('Project saved to local matrix', 'success');
+            }
+
+            loadUserProjects() {
+                if (!authManager.currentUser) return;
+                
+                const saved = localStorage.getItem(`quantum_project_${authManager.currentUser.id}`);
+                if (saved) {
+                    AppState.project = { ...AppState.project, ...JSON.parse(saved) };
+                    showNotification('Loaded previous session', 'success');
+                }
+            }
+
+            updateUI() {
+                // Refresh any dynamic UI elements
+                this.canvas.style.filter = this.effectsStack.join(' ');
+            }
+
+            undo() { showNotification('Undo stack rewound', 'info'); }
+            redo() { showNotification('Redo stack applied', 'info'); }
+        }
+
+        // === GLOBAL UI FUNCTIONS ===
+        function switchWorkspace(workspace) {
+            AppState.currentWorkspace = workspace;
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            showNotification(`Workspace: ${workspace.toUpperCase()}`);
+        }
+
+        function switchPanel(panel) {
+            AppState.currentPanel = panel;
+            document.querySelectorAll('.panel-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.querySelectorAll('.panel-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(panel + 'Panel').classList.add('active');
+        }
+
+        function toggleAI() {
+            document.getElementById('aiAssistant').classList.toggle('visible');
+        }
+
+        function applyAISuggestion(type) {
+            const actions = {
+                autoedit: () => showNotification('⚡ AI: Auto-generating edit from patterns...', 'success'),
+                colorgrade: () => showNotification('🎨 AI: Analyzing & applying color grade...', 'success'),
+                cyberpunk: () => showNotification('🌃 AI: Applying cyberpunk aesthetic...', 'success')
+            };
+            actions[type]?.();
+            toggleAI();
+        }
+
+        function exportProject() {
+            if (!quantumEditor) return;
+            
+            document.getElementById('loadingOverlay').classList.add('visible');
+            showNotification('Exporting to .qc format...', 'info');
+            
+            setTimeout(() => {
+                document.getElementById('loadingOverlay').classList.remove('visible');
+                
+                const projectData = {
+                    ...AppState.project,
+                    timestamp: new Date().toISOString(),
+                    quantum_version: '2.0'
+                };
+                
+                const blob = new Blob([JSON.stringify(projectData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${AppState.project.name || 'untitled'}.qc`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                showNotification('✓ Export complete! File saved', 'success');
+            }, 2500);
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const icon = type === 'success' ? '✓' : type === 'error' ? '⚠️' : 'ℹ️';
+            
+            document.getElementById('notificationIcon').textContent = icon;
+            document.getElementById('notificationText').textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+
+        // === AUTO-INIT ON SESSION ===
+        document.addEventListener('DOMContentLoaded', () => {
+            if (authManager.isLoggedIn()) {
+                initApp(authManager.currentUser);
+            }
+        });
+    </script>
+</body>
+</html>
