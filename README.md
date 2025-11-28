@@ -78,4 +78,4 @@ QuantumCut fuses the **intuitive workflow of CapCut** with the **professional po
 
 ```bash
 # Clone the quantum repository
-git clone https://github.com/yourusername/quantumcut.git
+git clone https://github.com/krytonix/quantumcut.git
