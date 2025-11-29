@@ -1,1728 +1,1432 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuantumCut: Cybernetic Studio</title>
-    <style>
-        /* === CYBERNETIC PIXEL FONT === */
-        @font-face {
-            font-family: 'PixelOperator';
-            src: url('https://fonts.cdnfonts.com/s/29811/PixelOperator.woff');
-        }
-
-        /* === CYBERNETIC COLOR PALETTE === */
-        :root {
-            --cyber-black: #0a0a12;
-            --cyber-black-deep: #050508;
-            --cyber-blue: #00e5ff;
-            --cyber-blue-dark: #0088cc;
-            --cyber-blue-glow: rgba(0, 229, 255, 0.6);
-            --cyber-cyan: #4affff;
-            --cyber-purple: #a0f;
-            --cyber-gray: #1a1a24;
-            --cyber-gray-light: #2a2a36;
-            --cyber-red: #ff0044;
-            --cyber-green: #00ff88;
-            --cyber-yellow: #ffdd00;
-            --pixel-size: 1px;
-            --glow-intensity: 0.5;
-        }
-
-        * {
-            image-rendering: pixelated;
-            image-rendering: crisp-edges;
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'PixelOperator', 'Courier New', monospace;
-            background: radial-gradient(ellipse at center, var(--cyber-black-deep) 0%, var(--cyber-black) 100%);
-            color: var(--cyber-blue);
-            overflow: hidden;
-            height: 100vh;
-            position: relative;
-            cursor: crosshair;
-        }
-
-        /* === ANIMATED CIRCUIT BACKGROUND === */
-        .circuit-bg {
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            z-index: -2;
-            opacity: 0.1;
-            background-image: 
-                repeating-linear-gradient(
-                    0deg,
-                    var(--cyber-blue) 0px,
-                    transparent 1px,
-                    transparent 20px,
-                    var(--cyber-blue) 21px
-                ),
-                repeating-linear-gradient(
-                    90deg,
-                    var(--cyber-blue) 0px,
-                    transparent 1px,
-                    transparent 20px,
-                    var(--cyber-blue) 21px
-                );
-            animation: circuit-scroll 20s linear infinite;
-        }
-
-        @keyframes circuit-scroll {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(20px, 20px); }
-        }
-
-        /* === PIXELATED GLOW ELEMENTS === */
-        .pixel-glow {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            z-index: -1;
-            box-shadow: 
-                inset 0 0 50px var(--cyber-blue-glow),
-                0 0 100px rgba(160, 0, 255, 0.2);
-        }
-
-        /* === AUTH SCREEN === */
-        .auth-screen {
-            position: fixed;
-            inset: 0;
-            background: var(--cyber-black-deep);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            transition: opacity 0.5s;
-        }
-
-        .auth-screen.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .auth-terminal {
-            background: var(--cyber-gray);
-            border: var(--pixel-size) solid var(--cyber-blue);
-            border-radius: 0;
-            padding: 40px;
-            width: 480px;
-            box-shadow: 
-                0 0 40px var(--cyber-blue-glow),
-                inset 0 0 20px rgba(0, 229, 255, 0.1);
-            position: relative;
-        }
-
-        .auth-terminal::before {
-            content: 'SYSTEM LOGIN v9.9.9';
-            position: absolute;
-            top: -10px;
-            left: 20px;
-            background: var(--cyber-gray);
-            padding: 0 10px;
-            color: var(--cyber-green);
-            font-size: 10px;
-            letter-spacing: 2px;
-        }
-
-        .auth-terminal h1 {
-            font-size: 24px;
-            margin-bottom: 30px;
-            text-align: center;
-            color: var(--cyber-cyan);
-            text-shadow: 0 0 10px var(--cyber-cyan);
-            letter-spacing: 3px;
-        }
-
-        .auth-tabs {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4px;
-            margin-bottom: 30px;
-        }
-
-        .auth-tab {
-            padding: 12px;
-            background: var(--cyber-gray-light);
-            border: var(--pixel-size) solid var(--cyber-blue);
-            color: var(--cyber-blue);
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            transition: all 0.2s;
-        }
-
-        .auth-tab:hover {
-            background: var(--cyber-blue);
-            color: var(--cyber-black);
-            box-shadow: 0 0 10px var(--cyber-blue-glow);
-        }
-
-        .auth-tab.active {
-            background: var(--cyber-blue);
-            color: var(--cyber-black);
-            box-shadow: 0 0 15px var(--cyber-blue-glow);
-        }
-
-        .form-group {
-            margin-bottom: 24px;
-            position: relative;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 10px;
-            color: var(--cyber-cyan);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 12px;
-            background: var(--cyber-black);
-            border: var(--pixel-size) solid var(--cyber-gray-light);
-            border-radius: 0;
-            color: var(--cyber-cyan);
-            font-family: inherit;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--cyber-blue);
-            background: var(--cyber-black-deep);
-            box-shadow: 0 0 10px var(--cyber-blue-glow);
-        }
-
-        .form-input::placeholder {
-            color: var(--cyber-gray-light);
-        }
-
-        .btn-cyber {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(180deg, var(--cyber-blue) 0%, var(--cyber-blue-dark) 100%);
-            border: var(--pixel-size) solid var(--cyber-blue);
-            border-radius: 0;
-            color: var(--cyber-black);
-            font-family: inherit;
-            font-size: 14px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-cyber:hover {
-            background: linear-gradient(180deg, var(--cyber-cyan) 0%, var(--cyber-blue) 100%);
-            box-shadow: 0 0 20px var(--cyber-blue-glow);
-            transform: translateY(-2px);
-        }
-
-        .btn-cyber:active {
-            transform: translateY(0);
-        }
-
-        .btn-cyber::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(
-                90deg,
-                transparent,
-                var(--cyber-cyan),
-                transparent
-            );
-            transform: rotate(30deg);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .btn-cyber:hover::after {
-            opacity: 0.3;
-            animation: scan 0.6s linear;
-        }
-
-        @keyframes scan {
-            0% { transform: rotate(30deg) translateX(-100%); }
-            100% { transform: rotate(30deg) translateX(100%); }
-        }
-
-        .error-text {
-            color: var(--cyber-red);
-            font-size: 10px;
-            margin-top: 8px;
-            text-shadow: 0 0 5px var(--cyber-red);
-        }
-
-        .success-text {
-            color: var(--cyber-green);
-            font-size: 10px;
-            margin-top: 8px;
-            text-shadow: 0 0 5px var(--cyber-green);
-        }
-
-        /* === USER PROFILE === */
-        .user-profile {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            display: none;
-            align-items: center;
-            gap: 12px;
-            background: var(--cyber-gray);
-            border: var(--pixel-size) solid var(--cyber-blue);
-            padding: 8px 16px;
-            box-shadow: 0 0 20px var(--cyber-blue-glow);
-            z-index: 100;
-        }
-
-        .user-profile.visible {
-            display: flex;
-        }
-
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            background: var(--cyber-blue);
-            border: 2px solid var(--cyber-cyan);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            color: var(--cyber-black);
-        }
-
-        .user-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .username {
-            font-size: 12px;
-            color: var(--cyber-cyan);
-            font-weight: bold;
-        }
-
-        .user-role {
-            font-size: 10px;
-            color: var(--cyber-purple);
-        }
-
-        /* === MAIN APP === */
-        .app-container {
-            display: grid;
-            grid-template-columns: 60px 240px 1fr 300px;
-            grid-template-rows: 48px 32px 1fr 200px;
-            height: 100vh;
-            gap: 2px;
-            background: var(--cyber-gray-light);
-            opacity: 0;
-            transition: opacity 0.5s;
-        }
-
-        .app-container.ready {
-            opacity: 1;
-        }
-
-        /* === TOP BAR === */
-        .top-bar {
-            grid-column: 1 / -1;
-            background: var(--cyber-gray);
-            border-bottom: 2px solid var(--cyber-blue);
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            box-shadow: 0 2px 10px var(--cyber-blue-glow);
-            position: relative;
-        }
-
-        .top-bar::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: var(--cyber-cyan);
-            box-shadow: 0 0 5px var(--cyber-cyan);
-        }
-
-        .logo {
-            font-size: 18px;
-            color: var(--cyber-cyan);
-            text-shadow: 0 0 10px var(--cyber-cyan);
-            letter-spacing: 2px;
-        }
-
-        .workspace-tabs {
-            margin-left: 40px;
-            display: flex;
-            gap: 4px;
-        }
-
-        .tab {
-            padding: 8px 16px;
-            background: var(--cyber-gray-light);
-            border: var(--pixel-size) solid var(--cyber-gray-light);
-            color: var(--cyber-blue);
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.2s;
-        }
-
-        .tab:hover {
-            border-color: var(--cyber-blue);
-            color: var(--cyber-cyan);
-        }
-
-        .tab.active {
-            background: var(--cyber-blue);
-            border-color: var(--cyber-blue);
-            color: var(--cyber-black);
-            box-shadow: 0 0 10px var(--cyber-blue-glow);
-        }
-
-        /* === TOOLBAR === */
-        .toolbar {
-            grid-column: 1;
-            grid-row: 3 / 5;
-            background: var(--cyber-gray);
-            border-right: 2px solid var(--cyber-blue);
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            padding: 16px 8px;
-            box-shadow: 2px 0 10px rgba(0, 229, 255, 0.2);
-        }
-
-        .tool-btn {
-            width: 44px;
-            height: 44px;
-            background: var(--cyber-gray-light);
-            border: 2px solid var(--cyber-gray-light);
-            border-radius: 0;
-            color: var(--cyber-blue);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            transition: all 0.2s;
-            position: relative;
-        }
-
-        .tool-btn:hover {
-            border-color: var(--cyber-blue);
-            color: var(--cyber-cyan);
-            box-shadow: 0 0 10px var(--cyber-blue-glow);
-        }
-
-        .tool-btn.active {
-            background: var(--cyber-blue);
-            border-color: var(--cyber-blue);
-            color: var(--cyber-black);
-            box-shadow: 0 0 15px var(--cyber-blue-glow);
-        }
-
-        .tool-btn .shortcut {
-            position: absolute;
-            bottom: 2px;
-            right: 2px;
-            font-size: 8px;
-            color: var(--cyber-purple);
-        }
-
-        /* === PANELS === */
-        .panel-tabs {
-            grid-column: 2;
-            grid-row: 2;
-            background: var(--cyber-gray);
-            border-right: 2px solid var(--cyber-blue);
-            border-bottom: 2px solid var(--cyber-blue);
-            display: flex;
-        }
-
-        .panel-tab {
-            flex: 1;
-            background: var(--cyber-gray-light);
-            border: none;
-            border-right: 1px solid var(--cyber-gray-light);
-            color: var(--cyber-blue);
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 10px;
-            text-transform: uppercase;
-            transition: all 0.2s;
-        }
-
-        .panel-tab:last-child {
-            border-right: none;
-        }
-
-        .panel-tab:hover {
-            background: var(--cyber-blue);
-            color: var(--cyber-black);
-        }
-
-        .panel-tab.active {
-            background: var(--cyber-blue);
-            color: var(--cyber-black);
-            box-shadow: inset 0 0 10px var(--cyber-blue-glow);
-        }
-
-        .media-panel {
-            grid-column: 2;
-            grid-row: 3 / 5;
-            background: var(--cyber-gray);
-            border-right: 2px solid var(--cyber-blue);
-            overflow: hidden;
-        }
-
-        .panel-content {
-            height: 100%;
-            overflow-y: auto;
-            padding: 16px;
-            display: none;
-        }
-
-        .panel-content.active {
-            display: block;
-        }
-
-        .panel-section {
-            margin-bottom: 24px;
-        }
-
-        .panel-section h3 {
-            color: var(--cyber-cyan);
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-            text-shadow: 0 0 5px var(--cyber-cyan);
-        }
-
-        .media-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            gap: 8px;
-        }
-
-        .media-item {
-            aspect-ratio: 16/9;
-            background: var(--cyber-gray-light);
-            border: 2px solid var(--cyber-gray-light);
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .media-item:hover {
-            border-color: var(--cyber-blue);
-            box-shadow: 0 0 10px var(--cyber-blue-glow);
-            transform: scale(1.05);
-        }
-
-        .effect-item, .template-item {
-            background: var(--cyber-gray-light);
-            border: 2px solid var(--cyber-gray-light);
-            padding: 8px;
-            margin-bottom: 4px;
-            cursor: pointer;
-            font-size: 11px;
-            transition: all 0.2s;
-            color: var(--cyber-blue);
-        }
-
-        .effect-item:hover {
-            border-color: var(--cyber-blue);
-            background: rgba(0, 229, 255, 0.1);
-            color: var(--cyber-cyan);
-        }
-
-        /* === VIEWER === */
-        .viewer-container {
-            grid-column: 3;
-            grid-row: 3;
-            background: var(--cyber-black-deep);
-            border: 2px solid var(--cyber-blue);
-            position: relative;
-            overflow: hidden;
-        }
-
-        #viewerCanvas {
-            width: 100%;
-            height: 100%;
-            background: var(--cyber-black);
-        }
-
-        .playback-controls {
-            position: absolute;
-            bottom: 16px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--cyber-gray);
-            border: 2px solid var(--cyber-blue);
-            padding: 8px;
-            display: flex;
-            gap: 4px;
-            box-shadow: 0 0 20px var(--cyber-blue-glow);
-        }
-
-        .playback-btn {
-            width: 40px;
-            height: 40px;
-            background: var(--cyber-gray-light);
-            border: 2px solid var(--cyber-gray-light);
-            color: var(--cyber-blue);
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.2s;
-        }
-
-        .playback-btn:hover {
-            border-color: var(--cyber-blue);
-            color: var(--cyber-cyan);
-        }
-
-        .playback-btn.primary {
-            background: var(--cyber-blue);
-            color: var(--cyber-black);
-            border-color: var(--cyber-blue);
-        }
-
-        /* === INSPECTOR === */
-        .inspector {
-            grid-column: 4;
-            grid-row: 3;
-            background: var(--cyber-gray);
-            border-left: 2px solid var(--cyber-blue);
-            overflow-y: auto;
-            padding: 16px;
-        }
-
-        .inspector-section {
-            margin-bottom: 24px;
-            border: 1px solid var(--cyber-gray-light);
-            padding: 12px;
-        }
-
-        .inspector-section h3 {
-            color: var(--cyber-cyan);
-            font-size: 12px;
-            text-transform: uppercase;
-            margin-bottom: 12px;
-            text-shadow: 0 0 5px var(--cyber-cyan);
-        }
-
-        .property-group {
-            margin-bottom: 16px;
-        }
-
-        .property-label {
-            display: flex;
-            justify-content: space-between;
-            font-size: 10px;
-            color: var(--cyber-blue);
-            margin-bottom: 4px;
-        }
-
-        .property-value {
-            color: var(--cyber-cyan);
-        }
-
-        .slider-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .slider {
-            flex: 1;
-            height: 4px;
-            background: var(--cyber-gray-light);
-            border-radius: 0;
-            outline: none;
-            -webkit-appearance: none;
-            cursor: pointer;
-        }
-
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 12px;
-            height: 12px;
-            background: var(--cyber-blue);
-            border: 1px solid var(--cyber-cyan);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .slider::-webkit-slider-thumb:hover {
-            background: var(--cyber-cyan);
-            box-shadow: 0 0 5px var(--cyber-blue-glow);
-        }
-
-        /* === TIMELINE === */
-        .timeline-container {
-            grid-column: 3 / 5;
-            grid-row: 4;
-            background: var(--cyber-gray);
-            border-top: 2px solid var(--cyber-blue);
-        }
-
-        .timeline-toolbar {
-            display: flex;
-            gap: 4px;
-            padding: 8px;
-            background: var(--cyber-gray-light);
-            border-bottom: 1px solid var(--cyber-blue);
-        }
-
-        .track {
-            height: 40px;
-            border-bottom: 1px solid var(--cyber-gray-light);
-            display: flex;
-            position: relative;
-        }
-
-        .track-header {
-            width: 80px;
-            background: var(--cyber-gray-light);
-            border-right: 2px solid var(--cyber-blue);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            color: var(--cyber-blue);
-        }
-
-        .clip {
-            position: absolute;
-            top: 4px;
-            height: 32px;
-            background: linear-gradient(180deg, var(--cyber-blue) 0%, var(--cyber-blue-dark) 100%);
-            border: 2px solid var(--cyber-blue);
-            cursor: move;
-            display: flex;
-            align-items: center;
-            padding: 0 8px;
-            font-size: 10px;
-            user-select: none;
-            transition: all 0.2s;
-            color: var(--cyber-black);
-            font-weight: bold;
-        }
-
-        .clip:hover {
-            box-shadow: 0 0 10px var(--cyber-blue-glow);
-        }
-
-        .clip.selected {
-            border-color: var(--cyber-purple);
-            box-shadow: 0 0 15px rgba(160, 0, 255, 0.6);
-        }
-
-        .playhead {
-            position: absolute;
-            left: 80px;
-            width: 2px;
-            height: 100%;
-            background: var(--cyber-red);
-            box-shadow: 0 0 10px var(--cyber-red);
-        }
-
-        /* === AI ASSISTANT === */
-        .ai-assistant {
-            position: fixed;
-            bottom: 16px;
-            right: 16px;
-            width: 300px;
-            background: var(--cyber-gray);
-            border: 2px solid var(--cyber-blue);
-            padding: 12px;
-            transform: translateY(200px);
-            transition: transform 0.3s;
-            box-shadow: 0 0 30px var(--cyber-blue-glow);
-        }
-
-        .ai-assistant.visible {
-            transform: translateY(0);
-        }
-
-        .ai-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid var(--cyber-blue);
-        }
-
-        .ai-icon {
-            width: 24px;
-            height: 24px;
-            background: var(--cyber-blue);
-            border: 1px solid var(--cyber-cyan);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            color: var(--cyber-black);
-        }
-
-        .ai-suggestion {
-            background: var(--cyber-gray-light);
-            border: 1px solid var(--cyber-gray-light);
-            padding: 8px;
-            margin-bottom: 4px;
-            cursor: pointer;
-            font-size: 10px;
-            transition: all 0.2s;
-            color: var(--cyber-blue);
-        }
-
-        .ai-suggestion:hover {
-            border-color: var(--cyber-blue);
-            background: rgba(0, 229, 255, 0.1);
-            color: var(--cyber-cyan);
-            box-shadow: 0 0 5px var(--cyber-blue-glow);
-        }
-
-        /* === LOADING === */
-        .loading-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(10, 10, 18, 0.95);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-
-        .loading-overlay.visible {
-            display: flex;
-        }
-
-        .cyber-loader {
-            width: 80px;
-            height: 80px;
-            position: relative;
-        }
-
-        .cyber-loader::before,
-        .cyber-loader::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border: 4px solid transparent;
-            animation: rotate 2s linear infinite;
-        }
-
-        .cyber-loader::before {
-            border-top-color: var(--cyber-blue);
-            border-bottom-color: var(--cyber-blue);
-        }
-
-        .cyber-loader::after {
-            border-left-color: var(--cyber-purple);
-            border-right-color: var(--cyber-purple);
-            animation-direction: reverse;
-        }
-
-        @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* === NOTIFICATION === */
-        .notification {
-            position: fixed;
-            top: 16px;
-            right: 16px;
-            background: var(--cyber-gray);
-            border: 2px solid var(--cyber-blue);
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transform: translateX(400px);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1001;
-            box-shadow: 0 0 30px var(--cyber-blue-glow);
-        }
-
-        .notification.show {
-            transform: translateX(0);
-        }
-
-        .notification.error {
-            border-color: var(--cyber-red);
-            box-shadow: 0 0 30px rgba(255, 0, 68, 0.5);
-        }
-
-        .notification.success {
-            border-color: var(--cyber-green);
-            box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
-        }
-
-        /* === SCROLLBARS === */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--cyber-gray);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--cyber-gray-light);
-            border: 1px solid var(--cyber-blue);
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--cyber-blue);
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>QuantumCut — Cybernetic Web Video Editor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="description" content="QuantumCut — Pixel-perfect, cybernetic, fast web video editor. Drag-drop timeline, layers, keyframes, color grading, LUTs, and one-click export." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 fill=%27%23000%27/%3E%3Ccircle cx=%2750%27 cy=%2750%27 r=%2730%27 fill=%27%2300D1FF%27/%3E%3Ctext x=%2750%25%27 y=%2758%25%27 text-anchor=%27middle%27 fill=%27%23000%27 font-size=%2742%27 font-family=%27monospace%27%3EQ%3C/text%3E%3C/svg%3E" />
+  <!-- TailwindCSS (CDN) for responsive and utility classes -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Icons: Feather -->
+  <script src="https://unpkg.com/feather-icons"></script>
+  <!-- FFmpeg.wasm (CDN) -->
+  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/ffmpeg.min.js"></script>
+  <style>
+    :root {
+      --qc-bg: #05060a;
+      --qc-panel: #0a0d14;
+      --qc-panel-2: #0d1117;
+      --qc-border: #111827;
+      --qc-text: #e5f4ff;
+      --qc-muted: #9ecbe6;
+      --qc-neon: #00d1ff;
+      --qc-neon-2: #3be1ff;
+      --qc-danger: #ff3b6e;
+      --qc-success: #06d6a0;
+      --qc-warning: #ffd166;
+      --glass: rgba(5, 8, 16, 0.55);
+      --glass-2: rgba(12, 18, 28, 0.65);
+      --shadow-neon: 0 0 10px rgba(0,209,255,0.6), inset 0 0 20px rgba(0,209,255,0.12);
+    }
+    html, body {
+      height: 100%;
+      background: radial-gradient(1200px 600px at 80% -20%, rgba(0,209,255,0.12), transparent 60%),
+                  radial-gradient(900px 400px at 10% 120%, rgba(0,209,255,0.08), transparent 60%),
+                  var(--qc-bg);
+      color: var(--qc-text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+      overscroll-behavior: none;
+    }
+    /* Grid baseline lines */
+    body::before, body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,209,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,209,255,0.06) 1px, transparent 1px);
+      background-size: 24px 24px, 24px 24px;
+      pointer-events: none;
+      mask-image: radial-gradient(600px 600px at 50% 50%, black 10%, transparent 65%);
+      z-index: -1;
+    }
+    /* Neon button */
+    .qc-btn {
+      background: linear-gradient(180deg, rgba(0,209,255,0.2), rgba(0,209,255,0.08));
+      border: 1px solid rgba(0,209,255,0.4);
+      color: var(--qc-text);
+      padding: 10px 14px;
+      border-radius: 12px;
+      box-shadow: var(--shadow-neon);
+      transition: transform 0.12s ease, box-shadow 0.2s ease, filter 0.2s ease;
+      backdrop-filter: blur(8px);
+    }
+    .qc-btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
+    .qc-btn:active { transform: translateY(0); filter: brightness(0.95); }
+    .qc-btn-danger { border-color: rgba(255,59,110,0.5); box-shadow: 0 0 10px rgba(255,59,110,0.5), inset 0 0 18px rgba(255,59,110,0.18); background: linear-gradient(180deg, rgba(255,59,110,0.24), rgba(255,59,110,0.08)); }
+    .qc-btn-slim { padding: 8px 12px; border-radius: 10px; }
+    .qc-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,209,255,0.35);
+      background: linear-gradient(180deg, rgba(0,209,255,0.12), rgba(0,209,255,0.04));
+      box-shadow: inset 0 0 10px rgba(0,209,255,0.12);
+      font-size: 12px;
+      color: var(--qc-muted);
+    }
+    .qc-glass {
+      background: var(--glass);
+      border: 1px solid rgba(0,209,255,0.2);
+      box-shadow: 0 0 24px rgba(0,209,255,0.12), inset 0 0 16px rgba(0,209,255,0.08);
+      backdrop-filter: blur(10px);
+    }
+    .qc-panel {
+      background: var(--glass-2);
+      border: 1px solid rgba(0,209,255,0.18);
+      box-shadow: 0 0 18px rgba(0,209,255,0.12), inset 0 0 20px rgba(0,209,255,0.06);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+    }
+    .qc-title {
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: var(--qc-text);
+      text-shadow: 0 0 18px rgba(0,209,255,0.6);
+    }
+    .qc-subtitle { color: var(--qc-muted); }
+    .qc-input {
+      background: rgba(2, 6, 12, 0.7);
+      border: 1px solid rgba(0,209,255,0.35);
+      color: var(--qc-text);
+      border-radius: 12px;
+      padding: 10px 12px;
+      transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .qc-input:focus {
+      outline: none;
+      border-color: var(--qc-neon);
+      box-shadow: 0 0 14px rgba(0,209,255,0.35);
+    }
+    .qc-divider {
+      height: 1px;
+      background: linear-gradient(90deg, rgba(0,209,255,0.2), rgba(0,209,255,0.05));
+      border: none;
+    }
+
+    /* App Layout */
+    #app {
+      display: grid;
+      grid-template-rows: 56px auto 220px;
+      grid-template-columns: 320px auto 320px;
+      grid-template-areas:
+        "topbar topbar topbar"
+        "sidebar preview rightbar"
+        "timeline timeline timeline";
+      height: 100vh;
+      gap: 10px;
+      padding: 10px;
+    }
+    #topbar { grid-area: topbar; }
+    #sidebar { grid-area: sidebar; overflow: auto; }
+    #preview { grid-area: preview; overflow: hidden; }
+    #rightbar { grid-area: rightbar; overflow: auto; }
+    #timeline { grid-area: timeline; overflow: hidden; }
+
+    /* Timeline */
+    .timeline-wrap {
+      height: 100%;
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 12px;
+    }
+    .track-list {
+      background: rgba(4,8,14,0.6);
+      border: 1px solid rgba(0,209,255,0.18);
+      border-radius: 14px;
+      overflow: auto;
+      padding: 8px;
+    }
+    .track {
+      display: grid;
+      grid-template-columns: 32px 1fr auto;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      margin-bottom: 8px;
+      border-radius: 10px;
+      background: rgba(0,209,255,0.06);
+      border: 1px solid rgba(0,209,255,0.26);
+    }
+    .track .dot {
+      width: 10px; height: 10px; border-radius: 999px;
+      background: var(--qc-neon);
+      box-shadow: 0 0 10px rgba(0,209,255,0.9);
+    }
+    .timeline-canvas {
+      position: relative;
+      background:
+        linear-gradient(180deg, rgba(0,209,255,0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,209,255,0.06) 1px, transparent 1px);
+      background-size: 24px 24px, 24px 24px;
+      border: 1px solid rgba(0,209,255,0.18);
+      border-radius: 14px;
+      overflow: auto;
+    }
+    .clip {
+      position: absolute;
+      height: 64px;
+      min-width: 80px;
+      background: linear-gradient(180deg, rgba(0,209,255,0.22), rgba(0,209,255,0.1));
+      border: 1px solid rgba(0,209,255,0.4);
+      border-radius: 12px;
+      box-shadow: var(--shadow-neon);
+      color: var(--qc-text);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px;
+      cursor: grab;
+    }
+    .clip:active { cursor: grabbing; }
+    .clip .handle {
+      width: 10px;
+      height: 100%;
+      border-radius: 10px;
+      background: rgba(0,209,255,0.22);
+      border-left: 1px solid rgba(0,209,255,0.4);
+      border-right: 1px solid rgba(0,209,255,0.4);
+      cursor: col-resize;
+    }
+    .playhead {
+      position: absolute;
+      top: 0;
+      width: 2px;
+      height: 100%;
+      background: var(--qc-neon);
+      box-shadow: 0 0 12px rgba(0,209,255,0.9);
+      pointer-events: none;
+    }
+
+    /* Preview */
+    .preview-wrap {
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto 180px;
+      gap: 12px;
+    }
+    .preview-stage {
+      position: relative;
+      background: #000000;
+      border: 1px solid rgba(0,209,255,0.22);
+      border-radius: 16px;
+      box-shadow: 0 0 18px rgba(0,209,255,0.12);
+      overflow: hidden;
+    }
+    .preview-stage .hud {
+      position: absolute;
+      top: 8px; left: 8px;
+      display: flex; gap: 8px;
+    }
+    .hud .meter {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(0,209,255,0.12);
+      border: 1px solid rgba(0,209,255,0.35);
+      color: var(--qc-muted);
+      font-size: 12px;
+    }
+    .preview-controls {
+      display: grid;
+      grid-template-columns: auto auto 1fr auto;
+      gap: 10px;
+    }
+
+    /* Rightbar panels */
+    .panel-title {
+      font-size: 13px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--qc-muted);
+    }
+    .slider-row {
+      display: grid;
+      grid-template-columns: 120px 1fr auto;
+      align-items: center;
+      gap: 8px;
+      margin: 8px 0;
+    }
+    .qc-slider {
+      appearance: none;
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(0,209,255,0.12), rgba(0,209,255,0.22));
+      border: 1px solid rgba(0,209,255,0.35);
+      box-shadow: inset 0 0 14px rgba(0,209,255,0.18);
+      outline: none;
+    }
+    .qc-slider::-webkit-slider-thumb {
+      appearance: none;
+      width: 18px; height: 18px; border-radius: 999px;
+      background: var(--qc-neon);
+      box-shadow: 0 0 12px rgba(0,209,255,0.7);
+      border: 2px solid #03141a;
+      cursor: pointer;
+    }
+
+    /* Auth screen */
+    #auth {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(800px 500px at 80% -10%, rgba(0,209,255,0.14), transparent 60%),
+                  radial-gradient(600px 400px at 10% 110%, rgba(0,209,255,0.1), transparent 60%),
+                  #04060a;
+      z-index: 50;
+    }
+    .logo-mark {
+      font-weight: 900;
+      font-size: 28px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-dot {
+      width: 14px; height: 14px; border-radius: 999px;
+      background: var(--qc-neon);
+      box-shadow: 0 0 16px rgba(0,209,255,0.9);
+    }
+
+    /* Toasts */
+    .toast {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(2, 8, 12, 0.8);
+      border: 1px solid rgba(0,209,255,0.25);
+      color: var(--qc-text);
+      padding: 8px 12px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,209,255,0.12);
+      backdrop-filter: blur(10px);
+      z-index: 60;
+      font-size: 13px;
+    }
+
+    /* Fullscreen */
+    .fullscreen .preview-stage { height: calc(100vh - 72px); }
+    .fullscreen #sidebar, .fullscreen #rightbar, .fullscreen #timeline { display: none; }
+    .fullscreen #app { grid-template-rows: 56px auto; grid-template-columns: 1fr; grid-template-areas: "topbar" "preview"; }
+  </style>
 </head>
 <body>
-    <!-- Circuit Background -->
-    <div class="circuit-bg"></div>
-    <div class="pixel-glow"></div>
-
-    <!-- AUTHENTICATION TERMINAL -->
-    <div class="auth-screen" id="authScreen">
-        <div class="auth-terminal">
-            <h1>[ QUANTUMCUT OS ]</h1>
-            <div class="auth-tabs">
-                <button class="auth-tab active" onclick="switchAuthTab('login')">LOGIN</button>
-                <button class="auth-tab" onclick="switchAuthTab('signup')">REGISTER</button>
-            </div>
-            
-            <form id="authForm">
-                <div class="form-group">
-                    <label class="form-label">USERNAME</label>
-                    <input type="text" class="form-input" id="username" placeholder="cyber_editor_42" required>
-                </div>
-                <div class="form-group" id="emailGroup" style="display: none;">
-                    <label class="form-label">EMAIL (OPTIONAL)</label>
-                    <input type="email" class="form-input" id="email" placeholder="dev@quantumcut.net">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">PASSWORD</label>
-                    <input type="password" class="form-input" id="password" placeholder="••••••••" required>
-                </div>
-                <div class="form-group" id="confirmPasswordGroup" style="display: none;">
-                    <label class="form-label">CONFIRM PASSWORD</label>
-                    <input type="password" class="form-input" id="confirmPassword" placeholder="••••••••">
-                </div>
-                <button type="submit" class="btn-cyber" id="authButton">[ EXECUTE LOGIN ]</button>
-                <div class="error-text" id="errorText"></div>
-                <div class="success-text" id="successText"></div>
-            </form>
+  <!-- AUTH SCREEN -->
+  <section id="auth" aria-label="QuantumCut Login">
+    <div class="qc-panel max-w-md w-[92%] p-6">
+      <div class="flex items-center justify-between mb-4">
+        <div class="logo-mark qc-title">
+          <span class="logo-dot"></span> QuantumCut
         </div>
-    </div>
+        <span class="qc-chip">Black + Neon Blue • Cybernetic</span>
+      </div>
 
-    <!-- USER PROFILE -->
-    <div class="user-profile" id="userProfile">
-        <div class="user-avatar">🖥️</div>
-        <div class="user-info">
-            <div class="username" id="currentUsername"></div>
-            <div class="user-role">Cyber Editor</div>
+      <p class="qc-subtitle mb-4">Free to use. Create a username and password to save your projects.</p>
+
+      <div class="grid gap-3">
+        <label class="text-sm qc-muted">Username</label>
+        <input id="auth-username" class="qc-input" type="text" placeholder="Enter username" />
+        <label class="text-sm qc-muted mt-2">Password</label>
+        <input id="auth-password" class="qc-input" type="password" placeholder="Enter password" />
+        <label class="text-sm qc-muted mt-2">Email (optional)</label>
+        <input id="auth-email" class="qc-input" type="email" placeholder="name@example.com" />
+      </div>
+
+      <div class="flex items-center gap-2 mt-4">
+        <button id="btn-signup" class="qc-btn">Sign up</button>
+        <button id="btn-login" class="qc-btn">Log in</button>
+        <button id="btn-demo" class="qc-btn qc-btn-slim">Try demo</button>
+      </div>
+
+      <hr class="qc-divider my-4" />
+
+      <div class="grid gap-2">
+        <div class="flex items-center gap-2">
+          <input id="use-firebase" type="checkbox" />
+          <label for="use-firebase" class="text-sm qc-muted">Use Firebase for cloud storage</label>
         </div>
-        <button class="btn-cyber" onclick="logout()" style="padding: 4px 12px; font-size: 10px;">[ LOGOUT ]</button>
+        <details class="qc-glass p-3 rounded-lg">
+          <summary class="cursor-pointer text-sm qc-muted">Firebase config (optional)</summary>
+          <div class="grid gap-2 mt-3">
+            <input id="firebase-apiKey" class="qc-input" placeholder="apiKey" />
+            <input id="firebase-authDomain" class="qc-input" placeholder="authDomain" />
+            <input id="firebase-projectId" class="qc-input" placeholder="projectId" />
+            <input id="firebase-storageBucket" class="qc-input" placeholder="storageBucket" />
+            <input id="firebase-messagingSenderId" class="qc-input" placeholder="messagingSenderId" />
+            <input id="firebase-appId" class="qc-input" placeholder="appId" />
+          </div>
+        </details>
+      </div>
     </div>
+  </section>
 
-    <!-- MAIN APPLICATION -->
-    <div class="app-container" id="appContainer" style="display: none;">
-        <!-- Top Bar -->
-        <header class="top-bar">
-            <div class="logo">⚛️ QUANTUMCUT CYBERNETIC</div>
-            <div class="workspace-tabs">
-                <button class="tab active" onclick="switchWorkspace('edit')">EDIT</button>
-                <button class="tab" onclick="switchWorkspace('color')">COLOR</button>
-                <button class="tab" onclick="switchWorkspace('effects')">EFFECTS</button>
-                <button class="tab" onclick="switchWorkspace('audio')">AUDIO</button>
-                <button class="tab" onclick="exportProject()">EXPORT</button>
-            </div>
-        </header>
+  <!-- APP -->
+  <main id="app" class="hidden">
+    <!-- TOPBAR -->
+    <header id="topbar" class="qc-panel flex items-center justify-between px-4">
+      <div class="flex items-center gap-3">
+        <div class="logo-mark qc-title">
+          <span class="logo-dot"></span> QuantumCut
+        </div>
+        <span class="qc-chip">Pixel-perfect • Cybernetic • Fast</span>
+      </div>
 
-        <!-- Toolbar -->
-        <nav class="toolbar">
-            <button class="tool-btn active" data-tool="select" title="Select Tool (V)">⬚<span class="shortcut">V</span></button>
-            <button class="tool-btn" data-tool="cut" title="Cut Tool (C)">✂️<span class="shortcut">C</span></button>
-            <button class="tool-btn" data-tool="trim" title="Trim Tool">↔️</button>
-            <button class="tool-btn" data-tool="text" title="Text Tool">T</button>
-            <button class="tool-btn" data-tool="zoom" title="Zoom Tool">🔍</button>
-            <div style="flex: 1;"></div>
-            <button class="tool-btn" onclick="toggleAI()" title="AI Assistant">🤖</button>
-        </nav>
+      <div class="flex items-center gap-2">
+        <button id="btn-import" class="qc-btn">
+          <i data-feather="upload"></i>
+          <span class="ml-2">Import</span>
+        </button>
+        <button id="btn-export" class="qc-btn">
+          <i data-feather="download"></i>
+          <span class="ml-2">Export</span>
+        </button>
+        <button id="btn-save" class="qc-btn">
+          <i data-feather="save"></i>
+          <span class="ml-2">Save</span>
+        </button>
+        <button id="btn-undo" class="qc-btn qc-btn-slim" title="Undo">
+          <i data-feather="rotate-ccw"></i>
+        </button>
+        <button id="btn-redo" class="qc-btn qc-btn-slim" title="Redo">
+          <i data-feather="rotate-cw"></i>
+        </button>
+        <button id="btn-fullscreen" class="qc-btn qc-btn-slim" title="Fullscreen">
+          <i data-feather="maximize"></i>
+        </button>
+        <button id="btn-logout" class="qc-btn qc-btn-danger qc-btn-slim" title="Logout">
+          <i data-feather="log-out"></i>
+        </button>
+      </div>
+    </header>
 
-        <!-- Panel Tabs -->
-        <div class="panel-tabs">
-            <button class="panel-tab active" onclick="switchPanel('media')">MEDIA</button>
-            <button class="panel-tab" onclick="switchPanel('effects')">EFFECTS</button>
-            <button class="panel-tab" onclick="switchPanel('templates')">TEMPLATES</button>
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="qc-panel p-3">
+      <div class="flex items-center justify-between mb-2">
+        <div class="panel-title">Library</div>
+        <button id="btn-add-text" class="qc-btn qc-btn-slim">
+          <i data-feather="type"></i><span class="ml-2">Text</span>
+        </button>
+      </div>
+      <div class="grid gap-2">
+        <div class="qc-glass p-2 rounded-lg">
+          <div class="panel-title mb-2">Media</div>
+          <input id="file-input" type="file" accept="video/*,audio/*,image/*" multiple class="qc-input w-full" />
+          <div id="media-list" class="grid grid-cols-2 gap-2 mt-2"></div>
+        </div>
+        <div class="qc-glass p-2 rounded-lg">
+          <div class="panel-title mb-2">Transitions</div>
+          <div id="transitions-list" class="grid grid-cols-2 gap-2"></div>
+        </div>
+        <div class="qc-glass p-2 rounded-lg">
+          <div class="panel-title mb-2">Effects & Filters</div>
+          <div id="effects-list" class="grid grid-cols-2 gap-2"></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- PREVIEW -->
+    <section id="preview" class="qc-panel p-3">
+      <div class="preview-wrap">
+        <div class="preview-stage" id="preview-stage">
+          <canvas id="preview-canvas"></canvas>
+          <div class="hud">
+            <div class="meter">FPS: <span id="hud-fps">0</span></div>
+            <div class="meter">Time: <span id="hud-time">0.00s</span></div>
+            <div class="meter">Scale: <span id="hud-scale">100%</span></div>
+          </div>
+        </div>
+        <div class="preview-controls">
+          <div class="flex items-center gap-2">
+            <button id="btn-play" class="qc-btn qc-btn-slim"><i data-feather="play"></i></button>
+            <button id="btn-pause" class="qc-btn qc-btn-slim"><i data-feather="pause"></i></button>
+            <button id="btn-stop" class="qc-btn qc-btn-slim"><i data-feather="square"></i></button>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btn-snap" class="qc-btn qc-btn-slim"><i data-feather="grid"></i><span class="ml-2">Snap</span></button>
+            <button id="btn-magnet" class="qc-btn qc-btn-slim"><i data-feather="magnet"></i><span class="ml-2">Magnet</span></button>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btn-add-key" class="qc-btn qc-btn-slim"><i data-feather="key"></i><span class="ml-2">Add keyframe</span></button>
+            <button id="btn-text-anim" class="qc-btn qc-btn-slim"><i data-feather="italic"></i><span class="ml-2">Text anim</span></button>
+          </div>
+          <div class="flex items-center gap-2 justify-self-end">
+            <select id="preview-scale" class="qc-input">
+              <option value="0.5">50%</option>
+              <option value="0.75">75%</option>
+              <option value="1" selected>100%</option>
+              <option value="1.5">150%</option>
+              <option value="2">200%</option>
+            </select>
+            <button id="btn-scope" class="qc-btn qc-btn-slim"><i data-feather="activity"></i><span class="ml-2">Scopes</span></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHTBAR -->
+    <aside id="rightbar" class="qc-panel p-3">
+      <div class="grid gap-3">
+        <div class="qc-glass p-3 rounded-lg">
+          <div class="panel-title">Color grading</div>
+          <div class="slider-row">
+            <span class="qc-muted">Exposure</span>
+            <input id="grade-exposure" type="range" min="-2" max="2" step="0.01" value="0" class="qc-slider" />
+            <span id="grade-exposure-val" class="qc-chip">0</span>
+          </div>
+          <div class="slider-row">
+            <span class="qc-muted">Contrast</span>
+            <input id="grade-contrast" type="range" min="0" max="2" step="0.01" value="1" class="qc-slider" />
+            <span id="grade-contrast-val" class="qc-chip">1</span>
+          </div>
+          <div class="slider-row">
+            <span class="qc-muted">Saturation</span>
+            <input id="grade-sat" type="range" min="0" max="2" step="0.01" value="1" class="qc-slider" />
+            <span id="grade-sat-val" class="qc-chip">1</span>
+          </div>
+          <div class="slider-row">
+            <span class="qc-muted">Temperature</span>
+            <input id="grade-temp" type="range" min="-1" max="1" step="0.01" value="0" class="qc-slider" />
+            <span id="grade-temp-val" class="qc-chip">0</span>
+          </div>
+          <div class="slider-row">
+            <span class="qc-muted">Tint</span>
+            <input id="grade-tint" type="range" min="-1" max="1" step="0.01" value="0" class="qc-slider" />
+            <span id="grade-tint-val" class="qc-chip">0</span>
+          </div>
+          <div class="flex items-center gap-2 mt-2">
+            <input id="lut-file" type="file" accept=".cube,.3dl" class="qc-input" />
+            <button id="btn-load-lut" class="qc-btn qc-btn-slim"><i data-feather="file-plus"></i><span class="ml-2">Load LUT</span></button>
+          </div>
         </div>
 
-        <!-- Media Panel -->
-        <aside class="media-panel">
-            <div class="panel-content active" id="mediaPanel">
-                <div class="panel-section">
-                    <h3>📁 MEDIA INVENTORY</h3>
-                    <button class="btn-cyber" onclick="loadMedia()" style="width: 100%; margin-bottom: 16px;">[ IMPORT MEDIA ]</button>
-                    <div class="media-grid" id="mediaGrid"></div>
-                </div>
-            </div>
-
-            <div class="panel-content" id="effectsPanel">
-                <div class="panel-section">
-                    <h3>🎨 VIDEO EFFECTS</h3>
-                    <div class="effect-item" data-effect="quantum-color">QUANTUM COLOR</div>
-                    <div class="effect-item" data-effect="pixel-blur">PIXEL BLUR</div>
-                    <div class="effect-item" data-effect="chroma-scan">CHROMA SCAN</div>
-                </div>
-            </div>
-
-            <div class="panel-content" id="templatesPanel">
-                <div class="panel-section">
-                    <h3>📑 CYBER TEMPLATES</h3>
-                    <div class="template-item">TERMINAL LOWER THIRD</div>
-                    <div class="template-item">GLITCH TITLE</div>
-                    <div class="template-item">MATRIX OVERLAY</div>
-                </div>
-            </div>
-        </aside>
-
-        <!-- Viewer -->
-        <main class="viewer-container">
-            <canvas id="viewerCanvas"></canvas>
-            <div class="playback-controls">
-                <button class="playback-btn" onclick="stepBackward()">⏪</button>
-                <button class="playback-btn primary" onclick="togglePlayback()" id="playPauseBtn">▶️</button>
-                <button class="playback-btn" onclick="stepForward()">⏩</button>
-                <div class="timecode" id="timecode">00:00 / 00:00</div>
-            </div>
-        </main>
-
-        <!-- Inspector -->
-        <aside class="inspector">
-            <div class="inspector-section">
-                <h3>🎬 CLIP PROPERTIES</h3>
-                <div class="property-group">
-                    <div class="property-label">DURATION <span class="property-value" id="clipDuration">00:00</span></div>
-                </div>
-                <div class="property-group">
-                    <div class="property-label">RESOLUTION <span class="property-value" id="clipResolution">-</span></div>
-                </div>
-                <div class="property-group">
-                    <div class="property-label">FPS <span class="property-value" id="clipFPS">-</span></div>
-                </div>
-            </div>
-
-            <div class="inspector-section">
-                <h3>⚡ QUANTUM CONTROLS</h3>
-                <div class="property-group">
-                    <div class="property-label">BRIGHTNESS</div>
-                    <div class="slider-container">
-                        <input type="range" class="slider" min="0" max="200" value="100">
-                        <button class="btn-cyber" style="padding: 2px 6px; font-size: 8px;">◆</button>
-                    </div>
-                </div>
-            </div>
-        </aside>
-
-        <!-- Timeline -->
-        <section class="timeline-container">
-            <div class="timeline-toolbar">
-                <button class="btn-cyber" onclick="addTrack()">[ ADD TRACK ]</button>
-                <button class="btn-cyber" onclick="splitClip()">[ SPLIT ]</button>
-                <button class="btn-cyber" onclick="deleteClip()">[ DELETE ]</button>
-            </div>
-            <div class="timeline-ruler"></div>
-            <div class="timeline-tracks" id="timelineTracks">
-                <div class="track" data-track-id="V1">
-                    <div class="track-header">V1</div>
-                    <div class="track-content">
-                        <div class="clip" data-clip-id="clip1" style="left: 100px; width: 300px;">
-                            QUANTUM_CLIP_001
-                            <div class="handle left"></div>
-                            <div class="handle right"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="playhead" id="playhead"></div>
-            </div>
-        </section>
-    </div>
-
-    <!-- AI Assistant -->
-    <div class="ai-assistant" id="aiAssistant">
-        <div class="ai-header">
-            <div class="ai-icon">🤖</div>
-            <div style="font-weight: bold; color: var(--cyber-cyan);">QUANTUM AI</div>
-            <button class="btn-cyber" onclick="toggleAI()" style="padding: 4px 8px; font-size: 10px;">[ X ]</button>
+        <div class="qc-glass p-3 rounded-lg">
+          <div class="panel-title mb-2">Audio mixing</div>
+          <div class="slider-row">
+            <span class="qc-muted">Master volume</span>
+            <input id="audio-master" type="range" min="0" max="1" step="0.01" value="1" class="qc-slider" />
+            <span id="audio-master-val" class="qc-chip">1.00</span>
+          </div>
+          <div class="slider-row">
+            <span class="qc-muted">Duck music</span>
+            <input id="audio-duck" type="range" min="0" max="1" step="0.05" value="0" class="qc-slider" />
+            <span id="audio-duck-val" class="qc-chip">0.00</span>
+          </div>
+          <div class="flex items-center gap-2 mt-1">
+            <button id="btn-audio-mute" class="qc-btn qc-btn-slim"><i data-feather="volume-x"></i><span class="ml-2">Mute</span></button>
+            <button id="btn-audio-solo" class="qc-btn qc-btn-slim"><i data-feather="headphones"></i><span class="ml-2">Solo</span></button>
+          </div>
         </div>
-        <div class="ai-suggestion" onclick="applyAISuggestion('autoedit')">⚡ AUTO-EDIT SEQUENCE</div>
-        <div class="ai-suggestion" onclick="applyAISuggestion('colorgrade')">🎨 AI COLOR GRADE</div>
-        <div class="ai-suggestion" onclick="applyAISuggestion('cyberpunk')">🌃 CYBERPUNK FILTER</div>
-    </div>
 
-    <!-- Loading -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="cyber-loader"></div>
-        <p style="color: var(--cyber-cyan); text-shadow: 0 0 10px var(--cyber-cyan);">QUANTUM RENDERING...</p>
-    </div>
+        <div class="qc-glass p-3 rounded-lg">
+          <div class="panel-title mb-2">Keyframes & motion</div>
+          <div class="grid gap-2">
+            <div class="slider-row">
+              <span class="qc-muted">Position X</span>
+              <input id="motion-x" type="range" min="-400" max="400" step="1" value="0" class="qc-slider" />
+              <span id="motion-x-val" class="qc-chip">0</span>
+            </div>
+            <div class="slider-row">
+              <span class="qc-muted">Position Y</span>
+              <input id="motion-y" type="range" min="-400" max="400" step="1" value="0" class="qc-slider" />
+              <span id="motion-y-val" class="qc-chip">0</span>
+            </div>
+            <div class="slider-row">
+              <span class="qc-muted">Scale</span>
+              <input id="motion-scale" type="range" min="0.2" max="3" step="0.01" value="1" class="qc-slider" />
+              <span id="motion-scale-val" class="qc-chip">1</span>
+            </div>
+            <div class="slider-row">
+              <span class="qc-muted">Rotation</span>
+              <input id="motion-rot" type="range" min="-180" max="180" step="1" value="0" class="qc-slider" />
+              <span id="motion-rot-val" class="qc-chip">0°</span>
+            </div>
+            <div class="flex items-center gap-2 mt-2">
+              <button id="btn-ease-in" class="qc-btn qc-btn-slim">Ease In</button>
+              <button id="btn-ease-out" class="qc-btn qc-btn-slim">Ease Out</button>
+              <button id="btn-ease-inout" class="qc-btn qc-btn-slim">Ease In-Out</button>
+            </div>
+          </div>
+        </div>
 
-    <!-- Notification -->
-    <div class="notification" id="notification">
-        <span id="notificationIcon">ℹ️</span>
-        <span id="notificationText"></span>
-    </div>
+        <div class="qc-glass p-3 rounded-lg">
+          <div class="panel-title mb-2">Text & graphics</div>
+          <div class="grid gap-2">
+            <input id="text-content" class="qc-input" placeholder="Your cybernetic title…" />
+            <div class="slider-row">
+              <span class="qc-muted">Size</span>
+              <input id="text-size" type="range" min="12" max="160" step="1" value="48" class="qc-slider" />
+              <span id="text-size-val" class="qc-chip">48</span>
+            </div>
+            <div class="slider-row">
+              <span class="qc-muted">Tracking</span>
+              <input id="text-track" type="range" min="-0.1" max="0.5" step="0.01" value="0.02" class="qc-slider" />
+              <span id="text-track-val" class="qc-chip">0.02</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="btn-text-glow" class="qc-btn qc-btn-slim">Neon glow</button>
+              <button id="btn-text-typewriter" class="qc-btn qc-btn-slim">Typewriter</button>
+              <button id="btn-text-slide" class="qc-btn qc-btn-slim">Slide-in</button>
+            </div>
+          </div>
+        </div>
 
-    <script>
-        // === AUTHENTICATION SYSTEM ===
-        class AuthManager {
-            constructor() {
-                this.users = this.loadUsers();
-                this.currentUser = this.loadSession();
-            }
+        <div class="qc-glass p-3 rounded-lg">
+          <div class="panel-title mb-2">Scopes</div>
+          <div class="grid grid-cols-2 gap-2">
+            <canvas id="scope-waveform" height="140"></canvas>
+            <canvas id="scope-vectorscope" height="140"></canvas>
+          </div>
+        </div>
+      </div>
+    </aside>
 
-            loadUsers() {
-                const users = localStorage.getItem('quantum_users');
-                return users ? JSON.parse(users) : [];
-            }
+    <!-- TIMELINE -->
+    <section id="timeline" class="qc-panel p-3">
+      <div class="timeline-wrap">
+        <div class="track-list">
+          <div class="flex items-center justify-between mb-2">
+            <div class="panel-title">Tracks</div>
+            <div class="flex items-center gap-2">
+              <button id="btn-add-vtrack" class="qc-btn qc-btn-slim">+ Video</button>
+              <button id="btn-add-atrack" class="qc-btn qc-btn-slim">+ Audio</button>
+              <button id="btn-add-ttrack" class="qc-btn qc-btn-slim">+ Text</button>
+            </div>
+          </div>
+          <div id="tracks"></div>
+        </div>
+        <div id="timeline-canvas" class="timeline-canvas">
+          <div id="timeline-grid" style="position:relative; width:3200px; height:180px;">
+            <div id="playhead" class="playhead" style="left: 120px;"></div>
+            <!-- Clips rendered dynamically -->
+          </div>
+          <div class="flex items-center justify-between p-2">
+            <div class="qc-chip">Drag & drop media into the timeline • Resize clip ends • Double-click to edit</div>
+            <div class="flex items-center gap-2">
+              <button id="btn-zoom-out" class="qc-btn qc-btn-slim"><i data-feather="minus"></i></button>
+              <button id="btn-zoom-in" class="qc-btn qc-btn-slim"><i data-feather="plus"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
 
-            loadSession() {
-                const session = localStorage.getItem('quantum_session');
-                return session ? JSON.parse(session) : null;
-            }
+  <!-- Toast -->
+  <div id="toast" class="toast hidden"></div>
 
-            saveUsers() {
-                localStorage.setItem('quantum_users', JSON.stringify(this.users));
-            }
+  <script>
+    feather.replace({ color: '#9ecbe6' });
 
-            saveSession(user) {
-                localStorage.setItem('quantum_session', JSON.stringify(user));
-            }
+    // --- Simple Toast ---
+    const toastEl = document.getElementById('toast');
+    function toast(msg, ms = 1800) {
+      toastEl.textContent = msg;
+      toastEl.classList.remove('hidden');
+      setTimeout(() => toastEl.classList.add('hidden'), ms);
+    }
 
-            clearSession() {
-                localStorage.removeItem('quantum_session');
-            }
+    // --- Auth ---
+    const authEl = document.getElementById('auth');
+    const appEl = document.getElementById('app');
+    const usernameEl = document.getElementById('auth-username');
+    const passwordEl = document.getElementById('auth-password');
+    const emailEl = document.getElementById('auth-email');
+    const btnSignup = document.getElementById('btn-signup');
+    const btnLogin = document.getElementById('btn-login');
+    const btnDemo = document.getElementById('btn-demo');
+    const btnLogout = document.getElementById('btn-logout');
+    const useFirebaseEl = document.getElementById('use-firebase');
 
-            hashPassword(password) {
-                let hash = 0;
-                for (let i = 0; i < password.length; i++) {
-                    const char = password.charCodeAt(i);
-                    hash = ((hash << 5) - hash) + char;
-                    hash = hash & hash;
-                }
-                return hash.toString();
-            }
+    const authStore = {
+      key: 'qc_users',
+      sessionKey: 'qc_session',
+      users: JSON.parse(localStorage.getItem('qc_users') || '{}'),
+      save() { localStorage.setItem(this.key, JSON.stringify(this.users)); },
+      setSession(username) { localStorage.setItem(this.sessionKey, JSON.stringify({ username })); },
+      clearSession() { localStorage.removeItem(this.sessionKey); }
+    };
 
-            signup(username, email, password) {
-                if (this.users.find(u => u.username === username)) {
-                    return { success: false, message: 'Username exists in matrix!' };
-                }
+    function enterApp(username) {
+      authStore.setSession(username);
+      authEl.classList.add('hidden');
+      appEl.classList.remove('hidden');
+      toast(`Welcome, ${username}. QuantumCut is armed.`);
+    }
 
-                const user = {
-                    id: Date.now().toString(),
-                    username,
-                    email,
-                    passwordHash: this.hashPassword(password),
-                    created: new Date().toISOString(),
-                    role: 'cyber_editor'
-                };
+    btnSignup.onclick = () => {
+      const u = usernameEl.value.trim();
+      const p = passwordEl.value;
+      if (!u || !p) return toast('Username and password required.');
+      if (authStore.users[u]) return toast('User already exists. Log in.');
+      authStore.users[u] = { password: p, email: emailEl.value || null };
+      authStore.save();
+      toast('Signup successful. Logging you in…');
+      enterApp(u);
+    };
 
-                this.users.push(user);
-                this.saveUsers();
-                this.saveSession(user);
-                return { success: true, user };
-            }
+    btnLogin.onclick = () => {
+      const u = usernameEl.value.trim();
+      const p = passwordEl.value;
+      const user = authStore.users[u];
+      if (!user || user.password !== p) return toast('Invalid credentials.');
+      enterApp(u);
+    };
 
-            login(username, password) {
-                const user = this.users.find(u => u.username === username);
-                if (!user) {
-                    return { success: false, message: 'User not found in system!' };
-                }
+    btnDemo.onclick = () => enterApp('DemoUser');
 
-                if (user.passwordHash !== this.hashPassword(password)) {
-                    return { success: false, message: 'Access denied: Invalid credentials!' };
-                }
+    btnLogout.onclick = () => {
+      authStore.clearSession();
+      appEl.classList.add('hidden');
+      authEl.classList.remove('hidden');
+      toast('Logged out.');
+    };
 
-                this.saveSession(user);
-                return { success: true, user };
-            }
+    // Auto-login if session exists
+    const existingSession = JSON.parse(localStorage.getItem(authStore.sessionKey) || 'null');
+    if (existingSession?.username) enterApp(existingSession.username);
 
-            logout() {
-                this.currentUser = null;
-                this.clearSession();
-            }
+    // --- Firebase (optional plumb) ---
+    const firebaseConfigInputs = {
+      apiKey: document.getElementById('firebase-apiKey'),
+      authDomain: document.getElementById('firebase-authDomain'),
+      projectId: document.getElementById('firebase-projectId'),
+      storageBucket: document.getElementById('firebase-storageBucket'),
+      messagingSenderId: document.getElementById('firebase-messagingSenderId'),
+      appId: document.getElementById('firebase-appId')
+    };
+    function getFirebaseConfig() {
+      return {
+        apiKey: firebaseConfigInputs.apiKey.value,
+        authDomain: firebaseConfigInputs.authDomain.value,
+        projectId: firebaseConfigInputs.projectId.value,
+        storageBucket: firebaseConfigInputs.storageBucket.value,
+        messagingSenderId: firebaseConfigInputs.messagingSenderId.value,
+        appId: firebaseConfigInputs.appId.value
+      };
+    }
 
-            isLoggedIn() {
-                return this.currentUser !== null;
-            }
+    // --- State ---
+    const state = {
+      projectName: 'Untitled QuantumCut',
+      tracks: [], // { id, type: 'video'|'audio'|'text', name }
+      clips: [],  // { id, trackId, start, duration, type, media?, text?, params }
+      timelineScale: 1.0, // affects pixel-per-second
+      pixelPerSecondBase: 120, // base zoom
+      playing: false,
+      currentTime: 0,
+      selection: null,
+      keyframes: {}, // clipId -> [{t, props}]
+      grading: { exposure: 0, contrast: 1, sat: 1, temp: 0, tint: 0, lut: null },
+      audio: { master: 1, duck: 0, mute: false, solo: false },
+      motion: { x: 0, y: 0, scale: 1, rot: 0, ease: 'linear' },
+      text: { content: 'QUANTUMCUT', size: 48, track: 0.02, glow: false, anim: null },
+      history: [],
+      future: [],
+    };
+
+    // --- Helpers ---
+    function pushHistory() {
+      state.history.push(JSON.stringify({ tracks: state.tracks, clips: state.clips, keyframes: state.keyframes }));
+      state.future = [];
+    }
+    function undo() {
+      if (!state.history.length) return toast('Nothing to undo.');
+      const snap = state.history.pop();
+      state.future.push(JSON.stringify({ tracks: state.tracks, clips: state.clips, keyframes: state.keyframes }));
+      const obj = JSON.parse(snap);
+      state.tracks = obj.tracks;
+      state.clips = obj.clips;
+      state.keyframes = obj.keyframes;
+      renderTracks();
+      renderTimeline();
+    }
+    function redo() {
+      if (!state.future.length) return toast('Nothing to redo.');
+      const snap = state.future.pop();
+      state.history.push(JSON.stringify({ tracks: state.tracks, clips: state.clips, keyframes: state.keyframes }));
+      const obj = JSON.parse(snap);
+      state.tracks = obj.tracks;
+      state.clips = obj.clips;
+      state.keyframes = obj.keyframes;
+      renderTracks();
+      renderTimeline();
+    }
+
+    document.getElementById('btn-undo').onclick = undo;
+    document.getElementById('btn-redo').onclick = redo;
+
+    // --- Tracks ---
+    const tracksEl = document.getElementById('tracks');
+    const btnAddV = document.getElementById('btn-add-vtrack');
+    const btnAddA = document.getElementById('btn-add-atrack');
+    const btnAddT = document.getElementById('btn-add-ttrack');
+
+    function addTrack(type) {
+      const id = 'trk_' + Math.random().toString(36).slice(2, 8);
+      const name = (type === 'video' ? 'V' : type === 'audio' ? 'A' : 'T') + '-' + (state.tracks.filter(t => t.type === type).length + 1);
+      state.tracks.push({ id, type, name });
+      pushHistory();
+      renderTracks();
+    }
+    btnAddV.onclick = () => addTrack('video');
+    btnAddA.onclick = () => addTrack('audio');
+    btnAddT.onclick = () => addTrack('text');
+
+    function renderTracks() {
+      tracksEl.innerHTML = '';
+      state.tracks.forEach(t => {
+        const row = document.createElement('div');
+        row.className = 'track';
+        row.innerHTML = `
+          <div class="dot"></div>
+          <div class="flex items-center gap-2">
+            <span>${t.name}</span>
+            <span class="qc-chip">${t.type.toUpperCase()}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="qc-btn qc-btn-slim" data-mute="${t.id}"><i data-feather="volume-x"></i></button>
+            <button class="qc-btn qc-btn-slim" data-solo="${t.id}"><i data-feather="headphones"></i></button>
+            <button class="qc-btn qc-btn-slim" data-del="${t.id}"><i data-feather="trash-2"></i></button>
+          </div>
+        `;
+        tracksEl.appendChild(row);
+      });
+      feather.replace();
+      // Attach events
+      document.querySelectorAll('[data-del]').forEach(btn => {
+        btn.onclick = () => {
+          const id = btn.getAttribute('data-del');
+          state.clips = state.clips.filter(c => c.trackId !== id);
+          state.tracks = state.tracks.filter(t => t.id !== id);
+          pushHistory();
+          renderTracks(); renderTimeline();
+        };
+      });
+    }
+    addTrack('video'); addTrack('audio'); addTrack('text'); // default tracks
+
+    // --- Media Library ---
+    const fileInput = document.getElementById('file-input');
+    const mediaList = document.getElementById('media-list');
+    const transitionsList = document.getElementById('transitions-list');
+    const effectsList = document.getElementById('effects-list');
+
+    const transitions = [
+      { id: 'cut', name: 'Cut' },
+      { id: 'fade', name: 'Fade' },
+      { id: 'cross', name: 'Crossfade' },
+      { id: 'slide', name: 'Slide' },
+      { id: 'zoom', name: 'Zoom' },
+      { id: 'glitch', name: 'Glitch' },
+    ];
+    const effects = [
+      { id: 'blur', name: 'Blur' },
+      { id: 'sharpen', name: 'Sharpen' },
+      { id: 'bloom', name: 'Bloom' },
+      { id: 'vhs', name: 'VHS' },
+      { id: 'chromatic', name: 'Chromatic ab.' },
+      { id: 'noise', name: 'Noise' },
+    ];
+    transitions.forEach(tr => {
+      const item = document.createElement('button');
+      item.className = 'qc-btn qc-btn-slim';
+      item.textContent = tr.name;
+      item.draggable = true;
+      item.ondragstart = ev => { ev.dataTransfer.setData('transition', tr.id); };
+      transitionsList.appendChild(item);
+    });
+    effects.forEach(ef => {
+      const item = document.createElement('button');
+      item.className = 'qc-btn qc-btn-slim';
+      item.textContent = ef.name;
+      item.draggable = true;
+      item.ondragstart = ev => { ev.dataTransfer.setData('effect', ef.id); };
+      effectsList.appendChild(item);
+    });
+
+    const mediaItems = [];
+    fileInput.onchange = async (e) => {
+      const files = Array.from(e.target.files);
+      for (const f of files) {
+        const url = URL.createObjectURL(f);
+        const type = f.type.startsWith('video') ? 'video' : f.type.startsWith('audio') ? 'audio' : 'image';
+        mediaItems.push({ id: 'm_' + Math.random().toString(36).slice(2, 8), name: f.name, url, type });
+      }
+      renderMedia();
+      toast('Media imported. Drag to timeline.');
+    };
+    function renderMedia() {
+      mediaList.innerHTML = '';
+      mediaItems.forEach(m => {
+        const card = document.createElement('div');
+        card.className = 'qc-glass rounded-lg p-2 flex items-center justify-between';
+        card.innerHTML = `
+          <div class="flex items-center gap-2">
+            <div class="dot"></div>
+            <div>
+              <div>${m.name}</div>
+              <div class="qc-subtitle text-xs">${m.type.toUpperCase()}</div>
+            </div>
+          </div>
+          <button class="qc-btn qc-btn-slim" data-add="${m.id}">Add</button>
+        `;
+        card.draggable = true;
+        card.ondragstart = ev => { ev.dataTransfer.setData('mediaId', m.id); };
+        mediaList.appendChild(card);
+      });
+      document.querySelectorAll('[data-add]').forEach(btn => {
+        btn.onclick = () => addMediaClip(btn.getAttribute('data-add'));
+      });
+    }
+
+    function addMediaClip(mediaId) {
+      const m = mediaItems.find(x => x.id === mediaId);
+      if (!m) return;
+      // Place on first matching track
+      const t = (m.type === 'video' || m.type === 'image') ? state.tracks.find(T => T.type === 'video') :
+                state.tracks.find(T => T.type === 'audio');
+      if (!t) return toast('No track available for this media type.');
+      const id = 'clip_' + Math.random().toString(36).slice(2, 8);
+      state.clips.push({
+        id, trackId: t.id, start: state.currentTime, duration: 4, type: m.type,
+        media: m, params: { transition: 'cut', effects: [] }
+      });
+      pushHistory();
+      renderTimeline();
+    }
+
+    // --- Timeline ---
+    const timelineCanvas = document.getElementById('timeline-canvas');
+    const timelineGrid = document.getElementById('timeline-grid');
+    const playheadEl = document.getElementById('playhead');
+
+    timelineCanvas.ondragover = ev => ev.preventDefault();
+    timelineCanvas.ondrop = ev => {
+      ev.preventDefault();
+      const mediaId = ev.dataTransfer.getData('mediaId');
+      if (mediaId) addMediaClip(mediaId);
+    };
+
+    function pxPerSecond() {
+      return state.pixelPerSecondBase * state.timelineScale;
+    }
+    function timeToPx(t) { return Math.max(0, Math.round(t * pxPerSecond())); }
+    function pxToTime(px) { return px / pxPerSecond(); }
+
+    function renderTimeline() {
+      // Clear clips
+      timelineGrid.querySelectorAll('.clip').forEach(c => c.remove());
+      // Render clips per track row
+      const trackIndexMap = {};
+      state.tracks.forEach((t, i) => trackIndexMap[t.id] = i);
+      const rowHeight = 64 + 12;
+      timelineGrid.style.height = Math.max(180, rowHeight * state.tracks.length + 24) + 'px';
+
+      state.clips.forEach(clip => {
+        const y = 12 + trackIndexMap[clip.trackId] * rowHeight;
+        const x = timeToPx(clip.start);
+        const w = timeToPx(clip.duration);
+        const el = document.createElement('div');
+        el.className = 'clip';
+        el.style.top = y + 'px';
+        el.style.left = x + 'px';
+        el.style.width = w + 'px';
+        el.setAttribute('data-id', clip.id);
+        el.innerHTML = `
+          <div class="handle" data-left="${clip.id}"></div>
+          <div class="flex-1 px-2 text-xs">
+            <div class="font-bold">${clip.media ? clip.media.name : clip.type.toUpperCase()}</div>
+            <div class="qc-subtitle">${clip.params.transition}${clip.params.effects.length ? ' • ' + clip.params.effects.join(', ') : ''}</div>
+          </div>
+          <div class="handle" data-right="${clip.id}"></div>
+        `;
+        // Drag move
+        let startX = 0, startLeft = x;
+        el.onmousedown = (ev) => {
+          if (ev.target.hasAttribute('data-left') || ev.target.hasAttribute('data-right')) return;
+          ev.preventDefault();
+          startX = ev.clientX;
+          startLeft = el.offsetLeft;
+          const onMove = (mv) => {
+            const dx = mv.clientX - startX;
+            const nx = Math.max(0, startLeft + dx);
+            el.style.left = nx + 'px';
+            clip.start = pxToTime(nx);
+            state.currentTime = clip.start;
+            playheadEl.style.left = nx + 'px';
+          };
+          const onUp = () => {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+            pushHistory();
+          };
+          document.addEventListener('mousemove', onMove);
+          document.addEventListener('mouseup', onUp);
+        };
+        // Resize left
+        el.querySelector('[data-left]').onmousedown = (ev) => {
+          ev.preventDefault();
+          const handle = ev.target;
+          const startW = el.offsetWidth;
+          const startLeft2 = el.offsetLeft;
+          const startX2 = ev.clientX;
+          const onMove = (mv) => {
+            const dx = mv.clientX - startX2;
+            const nw = Math.max(80, startW - dx);
+            const nl = Math.max(0, startLeft2 + dx);
+            el.style.width = nw + 'px';
+            el.style.left = nl + 'px';
+            clip.start = pxToTime(nl);
+            clip.duration = pxToTime(nw);
+          };
+          const onUp = () => {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+            pushHistory();
+          };
+          document.addEventListener('mousemove', onMove);
+          document.addEventListener('mouseup', onUp);
+        };
+        // Resize right
+        el.querySelector('[data-right]').onmousedown = (ev) => {
+          ev.preventDefault();
+          const startW = el.offsetWidth;
+          const startX3 = ev.clientX;
+          const onMove = (mv) => {
+            const dx = mv.clientX - startX3;
+            const nw = Math.max(80, startW + dx);
+            el.style.width = nw + 'px';
+            clip.duration = pxToTime(nw);
+          };
+          const onUp = () => {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+            pushHistory();
+          };
+          document.addEventListener('mousemove', onMove);
+          document.addEventListener('mouseup', onUp);
+        };
+
+        // Accept dragged transitions/effects
+        el.ondragover = ev => ev.preventDefault();
+        el.ondrop = ev => {
+          ev.preventDefault();
+          const tr = ev.dataTransfer.getData('transition');
+          const ef = ev.dataTransfer.getData('effect');
+          if (tr) clip.params.transition = tr;
+          if (ef) clip.params.effects.push(ef);
+          renderTimeline();
+        };
+
+        timelineGrid.appendChild(el);
+      });
+    }
+    renderTimeline();
+
+    document.getElementById('btn-zoom-in').onclick = () => {
+      state.timelineScale = Math.min(3, state.timelineScale + 0.1);
+      renderTimeline();
+    };
+    document.getElementById('btn-zoom-out').onclick = () => {
+      state.timelineScale = Math.max(0.4, state.timelineScale - 0.1);
+      renderTimeline();
+    };
+
+    // --- Playhead and Preview ---
+    const previewCanvas = document.getElementById('preview-canvas');
+    const previewStage = document.getElementById('preview-stage');
+    const hudFPS = document.getElementById('hud-fps');
+    const hudTime = document.getElementById('hud-time');
+    const hudScale = document.getElementById('hud-scale');
+    const previewScaleEl = document.getElementById('preview-scale');
+
+    function resizePreviewCanvas() {
+      const scale = parseFloat(previewScaleEl.value);
+      const w = Math.round(previewStage.clientWidth * (1 / scale));
+      const h = Math.round((previewStage.clientHeight - 0) * (1 / scale));
+      previewCanvas.width = Math.max(320, w);
+      previewCanvas.height = Math.max(180, h);
+      hudScale.textContent = Math.round(scale * 100) + '%';
+    }
+    window.addEventListener('resize', resizePreviewCanvas);
+    previewScaleEl.onchange = resizePreviewCanvas;
+    resizePreviewCanvas();
+
+    let lastFrame = performance.now();
+    let fpsCounter = { frames: 0, last: performance.now() };
+
+    const ctx = previewCanvas.getContext('2d');
+
+    function renderPreview(ts) {
+      const dt = (ts - lastFrame) / 1000;
+      lastFrame = ts;
+      ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+
+      // Simple layer-based render: draw text and rectangles for media clips currently visible
+      // Determine active clips at current time
+      const current = state.currentTime;
+      const activeClips = state.clips.filter(c => current >= c.start && current <= c.start + c.duration);
+
+      // Background
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
+
+      // Apply grading (naive preview simulation)
+      const exposure = state.grading.exposure;
+      const contrast = state.grading.contrast;
+      const sat = state.grading.sat;
+
+      // Draw active clips as colored blocks (video/image) and waveform bars (audio)
+      activeClips.forEach((c, idx) => {
+        const baseX = 20 + idx * 30 + state.motion.x;
+        const baseY = 40 + idx * 30 + state.motion.y;
+        const scale = state.motion.scale;
+        const rot = state.motion.rot * Math.PI / 180;
+        ctx.save();
+        ctx.translate(baseX, baseY);
+        ctx.rotate(rot);
+        ctx.scale(scale, scale);
+
+        if (c.type === 'video' || c.type === 'image') {
+          const w = 240, h = 140;
+          // Simulate color grading by neon borders and exposure/contrast tint
+          const grad = ctx.createLinearGradient(0, 0, w, h);
+          grad.addColorStop(0, `rgba(0,209,255,${0.2 + exposure * 0.15})`);
+          grad.addColorStop(1, `rgba(0,209,255,${0.08 + contrast * 0.1})`);
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, w, h);
+          ctx.strokeStyle = `rgba(0,209,255,${0.5 + sat * 0.2})`;
+          ctx.lineWidth = 2;
+          ctx.strokeRect(0, 0, w, h);
+          // Effects badges
+          ctx.fillStyle = 'rgba(0,209,255,0.6)';
+          ctx.font = '12px monospace';
+          ctx.fillText(`${c.params.transition}${c.params.effects.length ? ' + ' + c.params.effects.join(',') : ''}`, 8, 16);
+        } else if (c.type === 'audio') {
+          const w = 260, h = 80;
+          ctx.strokeStyle = 'rgba(0,209,255,0.8)';
+          ctx.strokeRect(0, 0, w, h);
+          // Fake waveform
+          ctx.beginPath();
+          for (let x = 0; x < w; x++) {
+            const y = h/2 + Math.sin((x + ts/10) / 10) * 20 * state.audio.master * (1 - state.audio.duck);
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
         }
+        ctx.restore();
+      });
 
-        const authManager = new AuthManager();
+      // Text layer
+      if (state.text.content) {
+        ctx.save();
+        ctx.translate(previewCanvas.width/2 + state.motion.x, 40 + state.motion.y);
+        ctx.rotate(state.motion.rot * Math.PI/180);
+        ctx.scale(state.motion.scale, state.motion.scale);
 
-        // === AUTH UI ===
-        let currentAuthMode = 'login';
+        ctx.font = `bold ${state.text.size}px Inter, system-ui, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillStyle = 'white';
+        ctx.filter = state.text.glow ? 'drop-shadow(0 0 12px rgba(0,209,255,0.8))' : 'none';
+        const content = (state.text.anim === 'typewriter')
+          ? state.text.content.slice(0, Math.max(1, Math.floor((ts/200) % (state.text.content.length + 1))))
+          : state.text.content;
+        ctx.fillText(content, 0, 0);
 
-        function switchAuthTab(mode) {
-            currentAuthMode = mode;
-            document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            const emailGroup = document.getElementById('emailGroup');
-            const confirmPasswordGroup = document.getElementById('confirmPasswordGroup');
-            const authButton = document.getElementById('authButton');
-            
-            if (mode === 'signup') {
-                emailGroup.style.display = 'block';
-                confirmPasswordGroup.style.display = 'block';
-                authButton.textContent = '[ EXECUTE REGISTER ]';
-            } else {
-                emailGroup.style.display = 'none';
-                confirmPasswordGroup.style.display = 'none';
-                authButton.textContent = '[ EXECUTE LOGIN ]';
-            }
-            
-            clearMessages();
+        ctx.restore();
+      }
+
+      // FPS HUD
+      fpsCounter.frames++;
+      if (ts - fpsCounter.last > 1000) {
+        hudFPS.textContent = fpsCounter.frames.toString();
+        fpsCounter.frames = 0;
+        fpsCounter.last = ts;
+      }
+      hudTime.textContent = current.toFixed(2) + 's';
+
+      if (state.playing) {
+        state.currentTime += dt;
+        playheadEl.style.left = timeToPx(state.currentTime) + 'px';
+      }
+      requestAnimationFrame(renderPreview);
+    }
+    requestAnimationFrame(renderPreview);
+
+    // Play controls
+    document.getElementById('btn-play').onclick = () => { state.playing = true; toast('Play'); };
+    document.getElementById('btn-pause').onclick = () => { state.playing = false; toast('Pause'); };
+    document.getElementById('btn-stop').onclick = () => { state.playing = false; state.currentTime = 0; playheadEl.style.left = '0px'; toast('Stop'); };
+
+    // --- Scopes ---
+    const scopeWave = document.getElementById('scope-waveform').getContext('2d');
+    const scopeVec = document.getElementById('scope-vectorscope').getContext('2d');
+    function renderScopes() {
+      // Waveform
+      scopeWave.clearRect(0,0,scopeWave.canvas.width, scopeWave.canvas.height);
+      scopeWave.strokeStyle = 'rgba(0,209,255,0.7)';
+      scopeWave.beginPath();
+      for (let x=0; x<scopeWave.canvas.width; x++){
+        const y = scopeWave.canvas.height/2 + Math.sin((x + performance.now()/10)/12) * 28;
+        x===0 ? scopeWave.moveTo(x,y) : scopeWave.lineTo(x,y);
+      }
+      scopeWave.stroke();
+      // Vectorscope
+      scopeVec.clearRect(0,0,scopeVec.canvas.width, scopeVec.canvas.height);
+      scopeVec.strokeStyle = 'rgba(0,209,255,0.7)';
+      scopeVec.beginPath();
+      const cx = scopeVec.canvas.width/2, cy = scopeVec.canvas.height/2;
+      for (let a=0; a<Math.PI*2; a+=0.05){
+        const r = 40 + Math.sin(a*3 + performance.now()/400)*10;
+        const x = cx + Math.cos(a)*r;
+        const y = cy + Math.sin(a)*r;
+        a===0 ? scopeVec.moveTo(x,y) : scopeVec.lineTo(x,y);
+      }
+      scopeVec.stroke();
+      requestAnimationFrame(renderScopes);
+    }
+    renderScopes();
+    document.getElementById('btn-scope').onclick = () => toast('Scopes refreshed');
+
+    // --- Color grading controls ---
+    function bindSlider(id, key, fmt = (v)=>v) {
+      const el = document.getElementById(id);
+      const lbl = document.getElementById(id + '-val');
+      el.oninput = () => { state.grading[key] = parseFloat(el.value); lbl.textContent = fmt(el.value); };
+    }
+    bindSlider('grade-exposure', 'exposure', v => Number(v).toFixed(2));
+    bindSlider('grade-contrast', 'contrast', v => Number(v).toFixed(2));
+    bindSlider('grade-sat', 'sat', v => Number(v).toFixed(2));
+    bindSlider('grade-temp', 'temp', v => Number(v).toFixed(2));
+    bindSlider('grade-tint', 'tint', v => Number(v).toFixed(2));
+
+    document.getElementById('btn-load-lut').onclick = () => {
+      const file = document.getElementById('lut-file').files?.[0];
+      if (!file) return toast('Select a LUT file (.cube/.3dl).');
+      const reader = new FileReader();
+      reader.onload = () => { state.grading.lut = reader.result; toast('LUT loaded. Applied in export.'); };
+      reader.readAsText(file);
+    };
+
+    // --- Audio mix controls ---
+    function bindAudio(id, key) {
+      const el = document.getElementById(id);
+      const lbl = document.getElementById(id + '-val');
+      el.oninput = () => { state.audio[key] = parseFloat(el.value); lbl.textContent = Number(el.value).toFixed(2); };
+    }
+    bindAudio('audio-master','master');
+    bindAudio('audio-duck','duck');
+    document.getElementById('btn-audio-mute').onclick = () => { state.audio.mute = !state.audio.mute; toast(state.audio.mute ? 'Muted' : 'Unmuted'); };
+    document.getElementById('btn-audio-solo').onclick = () => { state.audio.solo = !state.audio.solo; toast(state.audio.solo ? 'Solo mode' : 'All tracks'); };
+
+    // --- Motion/keyframes controls ---
+    function bindMotion(id, key, fmt) {
+      const el = document.getElementById(id);
+      const lbl = document.getElementById(id + '-val');
+      el.oninput = () => { state.motion[key] = parseFloat(el.value); lbl.textContent = fmt ? fmt(el.value) : el.value; };
+    }
+    bindMotion('motion-x','x');
+    bindMotion('motion-y','y');
+    bindMotion('motion-scale','scale');
+    bindMotion('motion-rot','rot', v => `${Math.round(v)}°`);
+
+    document.getElementById('btn-ease-in').onclick = () => { state.motion.ease = 'ease-in'; toast('Ease In set'); };
+    document.getElementById('btn-ease-out').onclick = () => { state.motion.ease = 'ease-out'; toast('Ease Out set'); };
+    document.getElementById('btn-ease-inout').onclick = () => { state.motion.ease = 'ease-in-out'; toast('Ease In-Out set'); };
+
+    document.getElementById('btn-add-key').onclick = () => {
+      if (!state.selection) return toast('Select a clip first (double-click).');
+      const id = state.selection;
+      const arr = state.keyframes[id] || [];
+      arr.push({ t: state.currentTime, props: JSON.parse(JSON.stringify(state.motion)) });
+      state.keyframes[id] = arr;
+      pushHistory();
+      toast(`Keyframe added @ ${state.currentTime.toFixed(2)}s`);
+    };
+
+    // Clip selection (double-click) to edit
+    timelineGrid.addEventListener('dblclick', (ev) => {
+      const clipEl = ev.target.closest('.clip');
+      if (!clipEl) return;
+      state.selection = clipEl.getAttribute('data-id');
+      clipEl.style.boxShadow = '0 0 16px rgba(0,209,255,0.9), inset 0 0 24px rgba(0,209,255,0.24)';
+      toast('Clip selected. Motion & text controls active.');
+    });
+
+    // --- Text controls ---
+    const textContentEl = document.getElementById('text-content');
+    const textSizeEl = document.getElementById('text-size');
+    const textTrackEl = document.getElementById('text-track');
+    document.getElementById('text-size-val').textContent = textSizeEl.value;
+    document.getElementById('text-track-val').textContent = textTrackEl.value;
+
+    textContentEl.oninput = () => state.text.content = textContentEl.value.toUpperCase();
+    textSizeEl.oninput = () => { state.text.size = parseInt(textSizeEl.value,10); document.getElementById('text-size-val').textContent = textSizeEl.value; };
+    textTrackEl.oninput = () => { state.text.track = parseFloat(textTrackEl.value); document.getElementById('text-track-val').textContent = textTrackEl.value; };
+    document.getElementById('btn-text-glow').onclick = () => { state.text.glow = !state.text.glow; toast(state.text.glow ? 'Glow on' : 'Glow off'); };
+    document.getElementById('btn-text-typewriter').onclick = () => { state.text.anim = 'typewriter'; toast('Typewriter animation'); };
+    document.getElementById('btn-text-slide').onclick = () => { state.text.anim = 'slide'; toast('Slide-in animation'); };
+    document.getElementById('btn-text-anim').onclick = () => { state.text.anim = 'fade'; toast('Fade animation'); };
+
+    // Add text element as a clip
+    document.getElementById('btn-add-text').onclick = () => {
+      const t = state.tracks.find(T => T.type === 'text') || state.tracks.find(T => T.type === 'video');
+      const id = 'clip_' + Math.random().toString(36).slice(2, 8);
+      state.clips.push({ id, trackId: t.id, start: state.currentTime, duration: 3, type: 'text', text: JSON.parse(JSON.stringify(state.text)), params: { transition: 'fade', effects: [] } });
+      pushHistory();
+      renderTimeline();
+    };
+
+    // --- Fullscreen ---
+    const btnFullscreen = document.getElementById('btn-fullscreen');
+    btnFullscreen.onclick = () => {
+      document.body.classList.toggle('fullscreen');
+      toast(document.body.classList.contains('fullscreen') ? 'Fullscreen on' : 'Fullscreen off');
+    };
+
+    // --- Save/Load Project ---
+    const btnSave = document.getElementById('btn-save');
+    btnSave.onclick = () => {
+      const session = JSON.parse(localStorage.getItem(authStore.sessionKey) || '{}');
+      const key = `qc_project_${session.username || 'demo'}`;
+      const data = {
+        meta: { name: state.projectName, updated: Date.now() },
+        state: {
+          tracks: state.tracks, clips: state.clips, keyframes: state.keyframes,
+          grading: state.grading, audio: state.audio, motion: state.motion, text: state.text
         }
+      };
+      localStorage.setItem(key, JSON.stringify(data));
+      toast('Project saved locally.');
+    };
 
-        document.getElementById('authForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            clearMessages();
-            
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
-            
-            if (!username || !password) {
-                showError('All fields are required!');
-                return;
-            }
+    // --- Import/Export ---
+    const btnImport = document.getElementById('btn-import');
+    const btnExport = document.getElementById('btn-export');
 
-            if (currentAuthMode === 'signup') {
-                const email = document.getElementById('email').value.trim();
-                const confirmPassword = document.getElementById('confirmPassword').value;
-                
-                if (password !== confirmPassword) {
-                    showError('Password mismatch detected!');
-                    return;
-                }
-                
-                const result = authManager.signup(username, email, password);
-                if (result.success) {
-                    showSuccess('Registration complete! Access granted...');
-                    setTimeout(() => initApp(result.user), 1000);
-                } else {
-                    showError(result.message);
-                }
-            } else {
-                const result = authManager.login(username, password);
-                if (result.success) {
-                    showSuccess('Authentication successful! Initiating system...');
-                    setTimeout(() => initApp(result.user), 500);
-                } else {
-                    showError(result.message);
-                }
-            }
-        });
+    btnImport.onclick = () => fileInput.click();
 
-        function clearMessages() {
-            document.getElementById('errorText').textContent = '';
-            document.getElementById('successText').textContent = '';
+    // FFmpeg.wasm setup (basic)
+    const { createFFmpeg } = FFmpeg;
+    const ffmpeg = createFFmpeg({ log: false });
+
+    async function ensureFFmpeg() {
+      if (!ffmpeg.isLoaded()) {
+        toast('Booting FFmpeg.wasm…');
+        try {
+          await ffmpeg.load();
+          toast('FFmpeg ready.');
+        } catch (e) {
+          toast('FFmpeg failed to load.');
         }
+      }
+    }
 
-        function showError(message) {
-            document.getElementById('errorText').textContent = message;
-        }
+    // Simple one-click export that assembles a preview video from timeline snapshots
+    btnExport.onclick = async () => {
+      await ensureFFmpeg();
+      toast('Rendering preview frames…');
 
-        function showSuccess(message) {
-            document.getElementById('successText').textContent = message;
-        }
+      // Render N frames from preview canvas as PNGs and then encode to MP4 (H.264) or WebM
+      const fps = 30;
+      const duration = Math.max(3, state.clips.reduce((acc, c) => Math.max(acc, c.start + c.duration), 0));
+      const totalFrames = Math.min(300, Math.ceil(fps * duration)); // cap for demo
+      const off = document.createElement('canvas');
+      off.width = previewCanvas.width;
+      off.height = previewCanvas.height;
+      const offctx = off.getContext('2d');
 
-        function initApp(user) {
-            document.getElementById('authScreen').classList.add('hidden');
-            document.getElementById('appContainer').style.display = 'grid';
-            document.getElementById('userProfile').classList.add('visible');
-            document.getElementById('currentUsername').textContent = user.username;
-            
-            quantumEditor = new QuantumCutEditor();
-            window.quantumEditor = quantumEditor;
-            
-            setTimeout(() => {
-                document.getElementById('appContainer').classList.add('ready');
-                showNotification(`System online. Welcome, ${user.username}!`, 'success');
-            }, 300);
-        }
+      // Simulate timeline playback for export
+      const originalTime = state.currentTime;
+      const originalPlaying = state.playing;
+      state.playing = false;
 
-        function logout() {
-            authManager.logout();
-            document.getElementById('appContainer').classList.remove('ready');
-            document.getElementById('userProfile').classList.remove('visible');
-            document.getElementById('appContainer').style.display = 'none';
-            document.getElementById('authScreen').classList.remove('hidden');
-            
-            // Clear form
-            document.getElementById('username').value = '';
-            document.getElementById('password').value = '';
-            document.getElementById('email').value = '';
-            document.getElementById('confirmPassword').value = '';
-            clearMessages();
-            
-            showNotification('Session terminated. Goodbye.', 'success');
-        }
+      for (let i=0;i<totalFrames;i++){
+        state.currentTime = i / fps;
+        // Draw current preview into offscreen
+        offctx.fillStyle = '#000';
+        offctx.fillRect(0,0,off.width, off.height);
+        // quick draw of preview canvas onto offscreen
+        offctx.drawImage(previewCanvas, 0, 0);
+        const blob = await new Promise(res => off.toBlob(res, 'image/png'));
+        const arrayBuffer = await blob.arrayBuffer();
+        ffmpeg.FS('writeFile', `frame_${String(i).padStart(4,'0')}.png`, new Uint8Array(arrayBuffer));
+      }
 
-        // === EDITOR CLASS ===
-        class QuantumCutEditor {
-            constructor() {
-                this.canvas = document.getElementById('viewerCanvas');
-                this.ctx = this.canvas.getContext('2d', { alpha: false });
-                this.video = document.createElement('video');
-                this.timeline = document.getElementById('timelineTracks');
-                this.playhead = document.getElementById('playhead');
-                this.isPlaying = false;
-                this.selectedClip = null;
-                this.effectsStack = [];
-                this.isDragging = false;
-                this.init();
-            }
+      toast('Encoding video…');
 
-            init() {
-                this.setupEventListeners();
-                this.setupDragAndDrop();
-                this.loadUserProjects();
-                showNotification('QuantumCut Cybernetic Systems ONLINE');
-            }
+      // Encode to WebM for browser speed
+      try {
+        await ffmpeg.run(
+          '-framerate', String(fps),
+          '-i', 'frame_%04d.png',
+          '-c:v', 'libvpx',
+          '-pix_fmt', 'yuv420p',
+          '-b:v', '1M',
+          'out.webm'
+        );
+        const data = ffmpeg.FS('readFile', 'out.webm');
+        const blob = new Blob([data.buffer], { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'QuantumCut.webm';
+        a.click();
+        toast('Export complete (WebM).');
+      } catch (err) {
+        toast('Export failed.');
+      }
 
-            setupEventListeners() {
-                // Global keyboard handler
-                document.addEventListener('keydown', (e) => {
-                    if (e.target.tagName === 'INPUT') return;
-                    
-                    const key = e.key.toLowerCase();
-                    const shortcuts = {
-                        ' ': () => { e.preventDefault(); this.togglePlayback(); },
-                        'v': () => this.setTool('select'),
-                        'c': () => this.setTool('cut'),
-                        'k': () => this.splitClip(),
-                        'delete': () => this.deleteSelected(),
-                        'z': () => { if (e.ctrlKey) this.undo(); },
-                        'y': () => { if (e.ctrlKey) this.redo(); },
-                        's': () => { if (e.ctrlKey) { e.preventDefault(); this.saveProject(); } }
-                    };
-                    
-                    if (shortcuts[key]) {
-                        shortcuts[key]();
-                        this.updateUI();
-                    }
-                });
+      // Cleanup
+      for (let i=0;i<totalFrames;i++){
+        try { ffmpeg.FS('unlink', `frame_${String(i).padStart(4,'0')}.png`); } catch {}
+      }
+      state.currentTime = originalTime;
+      state.playing = originalPlaying;
+    };
 
-                // Tool selection
-                document.querySelectorAll('.tool-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        const tool = btn.dataset.tool;
-                        this.setTool(tool);
-                        this.updateUI();
-                    });
-                });
+    // --- One-click export options ---
+    const exportFormats = [
+      { id: 'mp4', name: 'MP4 (H.264)', args: ['-c:v','libx264','-pix_fmt','yuv420p','-crf','23'] },
+      { id: 'webm', name: 'WebM (VP9)', args: ['-c:v','libvpx-vp9','-pix_fmt','yuv420p','-b:v','1M'] },
+      { id: 'mov', name: 'MOV (H.264)', args: ['-c:v','libx264','-pix_fmt','yuv420p','-crf','23'] },
+    ];
 
-                // Effect application
-                document.querySelectorAll('.effect-item').forEach(item => {
-                    item.addEventListener('click', () => {
-                        const effect = item.dataset.effect;
-                        this.addEffect(effect);
-                        this.updateUI();
-                    });
-                });
-            }
+    // --- Keyboard Shortcuts ---
+    window.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.key === 's') { e.preventDefault(); document.getElementById('btn-save').click(); }
+      if (e.key === ' ') { e.preventDefault(); state.playing = !state.playing; toast(state.playing ? 'Play' : 'Pause'); }
+      if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); }
+      if (e.ctrlKey && e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); }
+    });
 
-            setupDragAndDrop() {
-                // Clip dragging
-                document.querySelectorAll('.clip').forEach(clip => {
-                    clip.addEventListener('mousedown', (e) => {
-                        if (e.target.classList.contains('handle')) {
-                            this.startTrim(clip, e.target.classList.contains('right'));
-                        } else {
-                            this.startDrag(clip, e);
-                        }
-                    });
-                });
+    // --- Magnet/Snap toggles ---
+    document.getElementById('btn-magnet').onclick = (e) => {
+      e.currentTarget.classList.toggle('qc-btn-danger');
+      toast(e.currentTarget.classList.contains('qc-btn-danger') ? 'Magnet on' : 'Magnet off');
+    };
+    document.getElementById('btn-snap').onclick = (e) => {
+      e.currentTarget.classList.toggle('qc-btn-danger');
+      toast(e.currentTarget.classList.contains('qc-btn-danger') ? 'Snap to grid on' : 'Snap to grid off');
+    };
 
-                // Timeline drop
-                this.timeline.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    e.dataTransfer.dropEffect = 'move';
-                });
-
-                this.timeline.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    if (this.isDragging) {
-                        const rect = this.timeline.getBoundingClientRect();
-                        const left = Math.max(80, e.clientX - rect.left);
-                        this.draggedClip.style.left = left + 'px';
-                        this.isDragging = false;
-                        this.draggedClip = null;
-                    }
-                });
-            }
-
-            startDrag(clip, e) {
-                this.isDragging = true;
-                this.draggedClip = clip;
-                this.selectClip(clip);
-                clip.draggable = true;
-            }
-
-            selectClip(clip) {
-                document.querySelectorAll('.clip').forEach(c => c.classList.remove('selected'));
-                clip.classList.add('selected');
-                this.selectedClip = clip;
-                this.updateInspector(clip);
-            }
-
-            updateInspector(clip) {
-                const duration = this.calculateClipDuration(clip);
-                const resolution = clip.dataset.resolution || '1920x1080';
-                const fps = clip.dataset.fps || '60';
-                
-                document.getElementById('clipDuration').textContent = duration;
-                document.getElementById('clipResolution').textContent = resolution;
-                document.getElementById('clipFPS').textContent = fps;
-            }
-
-            calculateClipDuration(clip) {
-                const width = parseInt(clip.style.width) || 0;
-                const seconds = Math.floor(width / 50);
-                const mins = Math.floor(seconds / 60);
-                const secs = seconds % 60;
-                return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-            }
-
-            setTool(tool) {
-                AppState.selectedTool = tool;
-                document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
-                document.querySelector(`[data-tool="${tool}"]`).classList.add('active');
-                showNotification(`Tool: ${tool.toUpperCase()}`);
-            }
-
-            loadMedia() {
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = 'video/*,audio/*,image/*';
-                input.multiple = true;
-                input.onchange = async (e) => {
-                    const files = Array.from(e.target.files);
-                    for (const file of files) {
-                        await this.processMediaFile(file);
-                    }
-                    showNotification(`Imported ${files.length} media file(s)`, 'success');
-                };
-                input.click();
-            }
-
-            async processMediaFile(file) {
-                const url = URL.createObjectURL(file);
-                const mediaItem = {
-                    id: 'media-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
-                    name: file.name,
-                    url: url,
-                    type: file.type,
-                    size: file.size,
-                    uploaded: new Date().toISOString()
-                };
-                
-                AppState.project.media.push(mediaItem);
-                await this.createMediaThumbnail(mediaItem);
-            }
-
-            async createMediaThumbnail(mediaItem) {
-                return new Promise((resolve) => {
-                    const grid = document.getElementById('mediaGrid');
-                    const item = document.createElement('div');
-                    item.className = 'media-item';
-                    item.dataset.mediaId = mediaItem.id;
-                    
-                    if (mediaItem.type.startsWith('video/')) {
-                        const video = document.createElement('video');
-                        video.src = mediaItem.url;
-                        video.onloadedmetadata = () => {
-                            video.currentTime = Math.min(1, video.duration || 1);
-                        };
-                        video.onseeked = () => {
-                            const canvas = document.createElement('canvas');
-                            const ctx = canvas.getContext('2d');
-                            canvas.width = 160;
-                            canvas.height = 90;
-                            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                            item.style.backgroundImage = `url(${canvas.toDataURL()})`;
-                            item.style.backgroundSize = 'cover';
-                            item.innerHTML = `<div class="duration">${this.formatDuration(video.duration || 0)}</div>`;
-                            resolve();
-                        };
-                    } else {
-                        item.style.background = 'linear-gradient(45deg, var(--cyber-gray) 0%, var(--cyber-gray-light) 100%)';
-                        item.innerHTML = `<div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 24px;">${mediaItem.type.startsWith('audio/') ? '🎵' : '🖼️'}</div>`;
-                        resolve();
-                    }
-                    
-                    item.onclick = () => this.loadIntoViewer(mediaItem.url);
-                    grid.appendChild(item);
-                });
-            }
-
-            formatDuration(seconds) {
-                if (!seconds) return '00:00';
-                const mins = Math.floor(seconds / 60);
-                const secs = Math.floor(seconds % 60);
-                return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-            }
-
-            loadIntoViewer(url) {
-                this.video.src = url;
-                this.video.load();
-                this.canvas.style.display = 'block';
-                document.getElementById('viewerStatus').textContent = 'LOADING...';
-                
-                this.video.onloadeddata = () => {
-                    this.canvas.width = this.video.videoWidth;
-                    this.canvas.height = this.video.videoHeight;
-                    document.getElementById('viewerStatus').textContent = this.video.src.split('/').pop().substring(0, 20) + '...';
-                    document.getElementById('viewerResolution').textContent = `${this.video.videoWidth}x${this.video.videoHeight}`;
-                    document.getElementById('viewerFPS').textContent = '60 FPS';
-                    showNotification('Media loaded into quantum viewer', 'success');
-                };
-            }
-
-            togglePlayback() {
-                if (!this.video.src) {
-                    showNotification('No media loaded!', 'error');
-                    return;
-                }
-                
-                const btn = document.getElementById('playPauseBtn');
-                if (this.isPlaying) {
-                    this.video.pause();
-                    this.isPlaying = false;
-                    btn.textContent = '▶️';
-                    document.getElementById('viewerStatus').textContent = 'PAUSED';
-                } else {
-                    this.video.play();
-                    this.isPlaying = true;
-                    btn.textContent = '⏸️';
-                    document.getElementById('viewerStatus').textContent = 'PLAYING';
-                    this.startRenderLoop();
-                }
-            }
-
-            startRenderLoop() {
-                const render = () => {
-                    if (!this.isPlaying) return;
-                    
-                    if (this.video.readyState >= 2) {
-                        this.ctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
-                        this.applyRealTimeEffects();
-                        this.updateTimecode();
-                    }
-                    
-                    requestAnimationFrame(render);
-                };
-                requestAnimationFrame(render);
-            }
-
-            applyRealTimeEffects() {
-                // Apply stacked effects
-                if (this.effectsStack.length > 0) {
-                    let filterString = this.effectsStack.join(' ');
-                    this.ctx.filter = filterString;
-                } else {
-                    this.ctx.filter = 'none';
-                }
-            }
-
-            updateTimecode() {
-                const current = this.formatDuration(this.video.currentTime);
-                const total = this.formatDuration(this.video.duration);
-                document.getElementById('timecode').textContent = `${current} / ${total}`;
-            }
-
-            addEffect(effectId) {
-                const effectMap = {
-                    'quantum-color': 'brightness(1.1) contrast(1.2) saturate(1.3) hue-rotate(15deg)',
-                    'pixel-blur': 'blur(1px)',
-                    'chroma-scan': 'hue-rotate(90deg) saturate(2)'
-                };
-                
-                this.effectsStack.push(effectMap[effectId] || '');
-                showNotification(`Effect applied: ${effectId}`, 'success');
-            }
-
-            splitClip() {
-                if (this.selectedClip) {
-                    const newClip = this.selectedClip.cloneNode(true);
-                    this.selectedClip.parentNode.appendChild(newClip);
-                    showNotification('Clip divided at quantum level', 'success');
-                } else {
-                    showNotification('No clip selected!', 'error');
-                }
-            }
-
-            deleteSelected() {
-                if (this.selectedClip) {
-                    this.selectedClip.remove();
-                    this.selectedClip = null;
-                    showNotification('Clip erased from timeline', 'success');
-                } else {
-                    showNotification('No clip selected!', 'error');
-                }
-            }
-
-            addTrack() {
-                const trackCount = document.querySelectorAll('.track').length;
-                const track = document.createElement('div');
-                track.className = 'track';
-                track.dataset.trackId = `V${trackCount}`;
-                track.innerHTML = `
-                    <div class="track-header">V${trackCount}</div>
-                    <div class="track-content"></div>
-                `;
-                this.timeline.appendChild(track);
-                showNotification(`Track V${trackCount} initialized`, 'success');
-            }
-
-            saveProject() {
-                if (!authManager.currentUser) return;
-                
-                const projectData = {
-                    ...AppState.project,
-                    userId: authManager.currentUser.id,
-                    lastSaved: new Date().toISOString(),
-                    version: '2.0.0-cybernetic'
-                };
-                
-                localStorage.setItem(`quantum_project_${authManager.currentUser.id}`, JSON.stringify(projectData));
-                showNotification('Project saved to local matrix', 'success');
-            }
-
-            loadUserProjects() {
-                if (!authManager.currentUser) return;
-                
-                const saved = localStorage.getItem(`quantum_project_${authManager.currentUser.id}`);
-                if (saved) {
-                    AppState.project = { ...AppState.project, ...JSON.parse(saved) };
-                    showNotification('Loaded previous session', 'success');
-                }
-            }
-
-            updateUI() {
-                // Refresh any dynamic UI elements
-                this.canvas.style.filter = this.effectsStack.join(' ');
-            }
-
-            undo() { showNotification('Undo stack rewound', 'info'); }
-            redo() { showNotification('Redo stack applied', 'info'); }
-        }
-
-        // === GLOBAL UI FUNCTIONS ===
-        function switchWorkspace(workspace) {
-            AppState.currentWorkspace = workspace;
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            event.target.classList.add('active');
-            showNotification(`Workspace: ${workspace.toUpperCase()}`);
-        }
-
-        function switchPanel(panel) {
-            AppState.currentPanel = panel;
-            document.querySelectorAll('.panel-tab').forEach(tab => tab.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            document.querySelectorAll('.panel-content').forEach(content => content.classList.remove('active'));
-            document.getElementById(panel + 'Panel').classList.add('active');
-        }
-
-        function toggleAI() {
-            document.getElementById('aiAssistant').classList.toggle('visible');
-        }
-
-        function applyAISuggestion(type) {
-            const actions = {
-                autoedit: () => showNotification('⚡ AI: Auto-generating edit from patterns...', 'success'),
-                colorgrade: () => showNotification('🎨 AI: Analyzing & applying color grade...', 'success'),
-                cyberpunk: () => showNotification('🌃 AI: Applying cyberpunk aesthetic...', 'success')
-            };
-            actions[type]?.();
-            toggleAI();
-        }
-
-        function exportProject() {
-            if (!quantumEditor) return;
-            
-            document.getElementById('loadingOverlay').classList.add('visible');
-            showNotification('Exporting to .qc format...', 'info');
-            
-            setTimeout(() => {
-                document.getElementById('loadingOverlay').classList.remove('visible');
-                
-                const projectData = {
-                    ...AppState.project,
-                    timestamp: new Date().toISOString(),
-                    quantum_version: '2.0'
-                };
-                
-                const blob = new Blob([JSON.stringify(projectData, null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${AppState.project.name || 'untitled'}.qc`;
-                a.click();
-                URL.revokeObjectURL(url);
-                
-                showNotification('✓ Export complete! File saved', 'success');
-            }, 2500);
-        }
-
-        function showNotification(message, type = 'info') {
-            const notification = document.getElementById('notification');
-            const icon = type === 'success' ? '✓' : type === 'error' ? '⚠️' : 'ℹ️';
-            
-            document.getElementById('notificationIcon').textContent = icon;
-            document.getElementById('notificationText').textContent = message;
-            notification.className = `notification ${type}`;
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 4000);
-        }
-
-        // === AUTO-INIT ON SESSION ===
-        document.addEventListener('DOMContentLoaded', () => {
-            if (authManager.isLoggedIn()) {
-                initApp(authManager.currentUser);
-            }
-        });
-    </script>
+    // --- Import/Export MP4, MOV, WebM via file input and ffmpeg ---
+    document.getElementById('btn-import').title = 'Import MP4, MOV, WebM, audio, images';
+  </script>
 </body>
 </html>
